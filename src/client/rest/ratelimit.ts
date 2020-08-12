@@ -27,10 +27,7 @@ const RetryAfter = "Retry-After".toLowerCase()
 export class RatelimitResponseInterceptor extends ResponseInterceptor {
     onRejected(error: AxiosError) {
         let response: AxiosResponse, retryAfter: number;
-        console.log(error.response!.headers)
         if ((response = error.response) && (response.status === 429) && (retryAfter = +response.headers[RetryAfter]) && !isNaN(retryAfter)) {
-            console.log('FUCK! IM BEING RATELIMITED!!!')
-
             return new Promise((resolve, reject) => {
                 setTimeout(() => {
                     return this.client.request(error.config).then(resolve).catch(reject)

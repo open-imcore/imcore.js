@@ -1,9 +1,22 @@
-import { Client } from "../client";
-import { WebSocketManager } from "./manager";
-import { EventType } from "./events";
-import { ContactCreated, ContactUpdated, ContactRemoved, ChatUpdated, ChatCreated, ChatRemoved, BlockListUpdated, ChatParticipantsChanged, MessageUpdated, MessageReceived, MessageRemoved, ChatDisplayNameUpdated, ChatJoinStateUpdated } from "../client-events";
-import { ChatItemType } from "../../util/Constants";
-import { ChatItem } from "../../types";
+import { Client } from '../client';
+import { WebSocketManager } from './manager';
+import { EventType } from './events';
+import {
+  BlockListUpdated,
+  ChatCreated,
+  ChatDisplayNameUpdated,
+  ChatJoinStateUpdated,
+  ChatParticipantsChanged,
+  ChatRemoved,
+  ChatUpdated,
+  ContactCreated,
+  ContactRemoved,
+  ContactUpdated,
+  MessageReceived,
+  MessageRemoved, MessageUpdated,
+} from '../client-events';
+import { ChatItemType } from '../../util/Constants';
+import { ChatItem } from '../../types';
 
 export class EventHandler {
     constructor(public client: Client, manager: WebSocketManager, onReady: () => void) {
@@ -30,19 +43,19 @@ export class EventHandler {
         manager.on(EventType.itemsReceived, ({ items }) => {
             const messages = items.filter(item => item.type === ChatItemType.message) as ChatItem<ChatItemType.message>[]
 
+
             messages.forEach(({ payload: message }) => {
-                const exists = this.client.messages.contains(message.guid);
-                const struct = this.client.messages.add(message);
-
-                if (struct === null) {
-                    console.log(`Unexpectedly found null!`);
-                    console.log({ message, exists, struct });
-                    return;
-                }
-
-                this.client.emit(exists ? MessageUpdated : MessageReceived, struct);
+                this.client.emit(MessageReceived, this.client.messages.add(message));
             });
         });
+
+        manager.on(EventType.itemsUpdated, ({ items }) => {
+          const messages = items.filter(item => item.type === ChatItemType.message) as ChatItem<ChatItemType.message>[];
+
+          messages.forEach(({ payload: message }) => {
+            this.client.emit(MessageUpdated, this.client.messages.add(message));
+          });
+        })
 
         manager.on(EventType.itemsRemoved, ({ messages }) => {
             messages.forEach(id => {

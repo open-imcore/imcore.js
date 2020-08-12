@@ -3,6 +3,7 @@ import { ChatIDRepresentation, ChatRepresentation, ContactRepresentation, Contac
 export enum EventType {
     bootstrap = "bootstrap",
     itemsReceived = "itemsReceived",
+    itemsUpdated = "itemsUpdated",
     itemsRemoved = "itemsRemoved",
     participantsChanged = "participantsChanged",
     conversationRemoved = "conversationRemoved",
@@ -21,7 +22,9 @@ export interface BootstrapEvent {
     contacts: BulkContactRepresentation;
 }
 
-export type ItemsReceivedEvent = BulkChatItemRepresentation
+export type ItemsReceivedEvent = BulkChatItemRepresentation;
+
+export type ItemsUpdatedEvent = BulkChatItemRepresentation;
 
 export type ItemsRemovedEvent = BulkMessageIDRepresentation;
 
@@ -50,6 +53,7 @@ export type BlockListUpdatedEvent = BulkHandleIDRepresentation;
 export type Events = {
     [EventType.bootstrap]: BootstrapEvent;
     [EventType.itemsReceived]: ItemsReceivedEvent;
+    [EventType.itemsUpdated]: ItemsUpdatedEvent;
     [EventType.itemsRemoved]: ItemsRemovedEvent;
     [EventType.participantsChanged]: ParticipantsChangedEvent;
     [EventType.conversationRemoved]: ConversationRemovedEvent;

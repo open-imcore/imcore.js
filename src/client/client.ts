@@ -10,6 +10,8 @@ import { WebSocketManager } from "./websocket/manager";
 import { IMCoreEvent, IMCoreEventMap } from "./client-events";
 import { EventHandler } from "./websocket/EventHandler";
 import { RatelimitResponseInterceptor } from "./rest/ratelimit";
+import { SearchResult } from "../types";
+import { searchMessages } from "./rest/endpoints";
 
 const { Axios } = require('axios');
 Axios.prototype.delete = function(url, data, config) {
@@ -57,10 +59,33 @@ export class Client extends EventEmitter {
         });
     }
 
+    /**
+     * Search the database using a given query
+     * @param query query string
+     * @param limit maximum number of results
+     */
+    public async search(query: string, limit: number = 20): Promise<SearchResult[]> {
+        const { results } = await this.http.get(searchMessages, {
+            params: {
+                query,
+                limit
+            }
+        }) as { results: SearchResult[] };
+
+        return results;
+    }
+
+    /**
+     * Connect to the event API
+     */
     public connect() {
         this.socket.connect();
     }
 
+    /**
+     * Resolve a contact for a given handle
+     * @param handleID handle to resolve
+     */
     public contactForHandleID(handleID: string): Contact | null {
         return this.contacts.contactWithHandle(handleID);
     }

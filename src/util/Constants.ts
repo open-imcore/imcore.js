@@ -15,7 +15,8 @@ export enum ChatItemType {
     associated = "associated",
     message = "message",
     phantom = "phantom",
-    groupTitle = "groupTitle"
+    groupTitle = "groupTitle",
+    typing = "typing"
 }
 
 export const DefaultOptions: ClientOptions = {

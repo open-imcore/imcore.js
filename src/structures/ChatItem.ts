@@ -1,9 +1,10 @@
-import { ChatItemRepresentation } from "../types";
+import { ChatItemRepresentation, TapbackRepresentation } from "../types";
 import { Base } from "./Base";
 import { Client } from "../client/client";
 import { chatMessageTapbacks } from "../client/rest/endpoints";
+import { Tapback } from "./Tapback";
 
-export enum Tapback {
+export enum TapbackStyle {
     heart = 2000,
     thumbsUp = 2001,
     thumbsDown = 2002,
@@ -23,13 +24,30 @@ export class ChatItem<T extends ChatItemRepresentation = ChatItemRepresentation>
         super(client, data)
     }
 
-    async tapback(style: Tapback) {
+    /**
+     * Send a tapback with the given style
+     * @param style tapback style
+     */
+    async tapback(style: TapbackStyle) {
         await this.post(chatMessageTapbacks(this.chatGUID, this.messageGUID), undefined, {
             params: {
                 part: this.part,
                 type: style
             }
         })
+    }
+
+    /**
+     * Load all tapbacks for the item
+     */
+    async tapbacks(): Promise<Tapback[]> {
+        const { representations: rawTapbacks } = await this.get(chatMessageTapbacks(this.chatGUID, this.messageGUID), {
+            params: {
+                part: this.part
+            }
+        }) as { representations: TapbackRepresentation[] }
+
+        return rawTapbacks.map(t => new Tapback(this.client, t));
     }
 
     _patch({ guid, chatGUID, fromMe, time }: ChatItemRepresentation) {

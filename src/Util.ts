@@ -17,6 +17,7 @@ import { AnyChatItemModel, FuzzyHandle } from "./types";
 import { Client } from "./client/client";
 import { Handle } from "./structures/Handle";
 import { Contact } from "./structures/Contact";
+import { TypingChatItem } from "./structures/TypingChatItem";
 
 export type AnyChatItem = TextChatItem | DateChatItem | SenderChatItem | ParticipantChangeChatItem | AttachmentChatItem | StatusChatItem | GroupActionChatItem | PluginChatItem | AcknowledgmentChatItem | StubChatItem | GroupTitleChatItem | Message;
 
@@ -41,6 +42,7 @@ export class Util {
             case ChatItemType.message: return new Message(client, item.payload)
             case ChatItemType.phantom: return new StubChatItem(client, item.payload, messageGUID, part)
             case ChatItemType.groupTitle: return new GroupTitleChatItem(client, item.payload, messageGUID, part)
+            case ChatItemType.typing: return new TypingChatItem(client, item.payload, messageGUID, part)
             default: return null
         }
     }

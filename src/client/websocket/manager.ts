@@ -1,6 +1,5 @@
 import { WebSocket, TextDecoder } from "../../util/WebSocket";
 import pako from "pako";
-import { error } from "../../util/log";
 import { Events, EventType } from "./events";
 import { EventEmitter } from "events";
 
@@ -24,7 +23,7 @@ export class WebSocketManager extends EventEmitter {
     private socket: WebSocket;
     private decoder = new TextDecoder("utf-8");
 
-    constructor(public readonly url: string) {
+    constructor(public readonly url: string, public readonly reconnectInterval: number = 5000) {
         super();
     }
 
@@ -40,13 +39,30 @@ export class WebSocketManager extends EventEmitter {
 
             this.parse(this.decoder.decode(uint8));
         });
+
+        this.socket.addEventListener('error', _ => {
+            
+        });
+
+        this.socket.addEventListener('close', event => {
+            this.emit('debug', { level: 'log', message: ['Socket closed with event', event] })
+
+            switch (event.code) {
+                default:
+                    this.scheduleReconnect();
+            }
+        });
+    }
+
+    private scheduleReconnect() {
+        setTimeout(() => this.connect(), this.reconnectInterval);
     }
 
     private parse(raw: string) {
         try {
             var payload = JSON.parse(raw);
         } catch (e) {
-            error(`Failed to parse payload from server`, e)
+            this.emit('debug', { level: 'error', message: [e] })
             return
         }
 

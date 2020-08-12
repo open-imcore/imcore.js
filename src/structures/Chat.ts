@@ -1,4 +1,4 @@
-import { ChatRepresentation, FuzzyHandle } from "../types";
+import { ChatRepresentation, FuzzyHandle, MessageRepresentation } from "../types";
 import { Base } from "./Base";
 import { Handle } from "./Handle";
 import { chatParticipants, chatMessages, chatJoin, chatName } from "../client/rest/endpoints";
@@ -60,6 +60,17 @@ export class Chat extends Base<ChatRepresentation> implements Omit<ChatRepresent
         const { data: resolved } = await this.patch(chatName(this.guid), { name });
 
         return this._patch(resolved);
+    }
+
+    async loadMessages(beforeGUID: string, limit: number = 50): Promise<Message[]> {
+        const { items: rawMessages } = await this.get(chatMessages(this.guid), {
+            params: {
+                before: beforeGUID,
+                limit
+            }
+        }) as { items: MessageRepresentation[] }
+
+        return rawMessages.map(message => this.client.messages.add(message));
     }
 
     /**

@@ -18,6 +18,16 @@ export declare interface ChatRepresentation {
     style: number;
 }
 
+export declare interface SearchResult {
+    sender: string;
+    isFromMe: boolean;
+    time: number;
+    acknowledgmentType: number;
+    chatGUID: string;
+    text: string;
+    guid: string;
+}
+
 export declare interface ChatIDRepresentation {
     chat: string;
 }
@@ -121,9 +131,20 @@ export declare interface AcknowledgmentChatItemRepresentation extends ChatItemRe
     acknowledgmentType: number;
 }
 
+export declare interface TapbackRepresentation {
+    chatGUID: string;
+    associatedMessageType: number;
+    associatedMessageGUID: string;
+    handle: string;
+}
+
 export declare interface AssociatedMessageItemRepresentation extends ChatItemRepresentation {
     associatedGUID: string;
     associatedType: number;
+}
+
+export declare interface TypingChatItemRepresentation extends ChatItemRepresentation {
+  sender: string;
 }
 
 export declare interface MessageRepresentation extends ChatItemRepresentation {
@@ -165,7 +186,8 @@ export declare type ChatItems = {
     [ChatItemType.associated]: AssociatedMessageItemRepresentation,
     [ChatItemType.message]: MessageRepresentation,
     [ChatItemType.phantom]: StubChatItemRepresentation,
-    [ChatItemType.groupTitle]: GroupTitleChangeItemRepresentation
+    [ChatItemType.groupTitle]: GroupTitleChangeItemRepresentation,
+    [ChatItemType.typing]: TypingChatItemRepresentation
 }
 
 export declare interface ChatItem<T extends ChatItemType> {
@@ -173,6 +195,6 @@ export declare interface ChatItem<T extends ChatItemType> {
     payload: ChatItems[T];
 }
 
-export type AnyChatItemModel = ChatItem<ChatItemType.date> | ChatItem<ChatItemType.sender> | ChatItem<ChatItemType.participantChange> | ChatItem<ChatItemType.attachment> | ChatItem<ChatItemType.status> | ChatItem<ChatItemType.groupAction> | ChatItem<ChatItemType.plugin> | ChatItem<ChatItemType.text> | ChatItem<ChatItemType.acknowledgment> | ChatItem<ChatItemType.associated> | ChatItem<ChatItemType.message> | ChatItem<ChatItemType.phantom> | ChatItem<ChatItemType.groupTitle>
+export type AnyChatItemModel = ChatItem<ChatItemType.typing> | ChatItem<ChatItemType.date> | ChatItem<ChatItemType.sender> | ChatItem<ChatItemType.participantChange> | ChatItem<ChatItemType.attachment> | ChatItem<ChatItemType.status> | ChatItem<ChatItemType.groupAction> | ChatItem<ChatItemType.plugin> | ChatItem<ChatItemType.text> | ChatItem<ChatItemType.acknowledgment> | ChatItem<ChatItemType.associated> | ChatItem<ChatItemType.message> | ChatItem<ChatItemType.phantom> | ChatItem<ChatItemType.groupTitle>
 
 export declare type FuzzyHandle = string | Handle | Contact
