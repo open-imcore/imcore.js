@@ -62,6 +62,11 @@ export class Chat extends Base<ChatRepresentation> implements Omit<ChatRepresent
         return this._patch(resolved);
     }
 
+    /**
+     * Loads messages before a given GUID
+     * @param beforeGUID guid to mark as the start
+     * @param limit number of messages to load
+     */
     async loadMessages(beforeGUID: string, limit: number = 50): Promise<Message[]> {
         const { items: rawMessages } = await this.get(chatMessages(this.guid), {
             params: {
