@@ -1,20 +1,20 @@
-import axios, { AxiosInstance, AxiosResponse, AxiosRequestConfig } from "axios";
-import { Contact } from "../structures/Contact";
-import { ContactsManager } from "../managers/ContactsManager";
-import { MessageManager } from "../managers/MessageManager";
-import { HandleManager } from "../managers/HandleManager";
-import { ChatManager } from "../managers/ChatManager";
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import { EventEmitter } from "events";
+import { ChatManager } from "../managers/ChatManager";
+import { ContactsManager } from "../managers/ContactsManager";
+import { HandleManager } from "../managers/HandleManager";
+import { MessageManager } from "../managers/MessageManager";
+import { Contact } from "../structures/Contact";
+import { SearchResult, AttachmentRepresentation } from "../types";
 import { DefaultOptions } from "../util/Constants";
-import { WebSocketManager } from "./websocket/manager";
 import { IMCoreEvent, IMCoreEventMap } from "./client-events";
-import { EventHandler } from "./websocket/EventHandler";
+import { searchMessages, attachments } from "./rest/endpoints";
 import { RatelimitResponseInterceptor } from "./rest/ratelimit";
-import { SearchResult } from "../types";
-import { searchMessages } from "./rest/endpoints";
+import { EventHandler } from "./websocket/EventHandler";
+import { WebSocketManager } from "./websocket/manager";
 
 const { Axios } = require('axios');
-Axios.prototype.delete = function(url, data, config) {
+Axios.prototype.delete = function (url, data, config) {
     return this.request(Object.assign({}, config || {}, {
         method: "delete",
         url: url,
@@ -51,12 +51,26 @@ export class Client extends EventEmitter {
 
     public constructor(public options: ClientOptions = DefaultOptions) {
         super();
-        
+
         new RatelimitResponseInterceptor(this.http).register(this.http);
 
         this.on("ready", () => {
             (this as any).ready = true;
         });
+    }
+
+    public async upload(attachment: Buffer | Uint8Array | ArrayBuffer) {
+        const FileType = await import("file-type");
+
+        const mime = await FileType.fromBuffer(attachment);
+        
+        const { data: attachmentRepresentation } = await this.http.post(attachments, attachment, {
+            headers: {
+                'content-type': mime.mime
+            }
+        }) as { data: AttachmentRepresentation }
+
+        return attachmentRepresentation
     }
 
     /**
@@ -65,12 +79,12 @@ export class Client extends EventEmitter {
      * @param limit maximum number of results
      */
     public async search(query: string, limit: number = 20): Promise<SearchResult[]> {
-        const { results } = await this.http.get(searchMessages, {
+        const { data: { results } } = await this.http.get(searchMessages, {
             params: {
                 query,
                 limit
             }
-        }) as { results: SearchResult[] };
+        }) as { data: { results: SearchResult[] } };
 
         return results;
     }

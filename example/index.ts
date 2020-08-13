@@ -1,9 +1,58 @@
-import { Client, Ready, MessageReceived, ChatParticipantsChanged, ChatJoinStateUpdated, ChatDisplayNameUpdated, TextChatItem, MessageUpdated } from "../src";
+import { ChatDisplayNameUpdated, ChatJoinStateUpdated, ChatParticipantsChanged, Client, MessageReceived, MessageUpdated, Ready } from "../src";
 
 const client = new Client();
 
+var running = false
 client.on(Ready, () => {
-    console.log("Client is ready!");
+    if (!running) {
+        (async function() {
+            const inquirer = await import("inquirer");
+            const fs = await import("fs-extra");
+        
+            while (true) {
+                const { instruction } = await inquirer.prompt({
+                    type: "list",
+                    name: "instruction",
+                    message: "What do you want to do?",
+                    choices: [
+                        {
+                            name: "Send Message",
+                            value: "send-message"
+                        },
+                        {
+                            name: "Upload Attachment",
+                            value: "upload"
+                        }
+                    ]
+                });
+
+                switch (instruction) {
+                    case "upload":
+                        const { path: filePath } = await inquirer.prompt({
+                            type: "input",
+                            name: "path",
+                            message: "File Path"
+                        });
+
+                        if (!await fs.pathExists(filePath) || !await fs.stat(filePath).then(stat => stat.isFile())) {
+                            console.warn('Not a file')
+                            continue
+                        }
+
+                        const data = await fs.readFile(filePath);
+
+                        const attachment = await client.upload(data);
+
+                        console.log(attachment);
+                        
+                        break;
+                    case "send-message":
+                        break;
+                }
+            }
+        })()
+        running = true
+    }
 });
 
 client.on(MessageUpdated, message => {
@@ -11,38 +60,7 @@ client.on(MessageUpdated, message => {
 });
 
 client.on(MessageReceived, message => {
-    const sender = message.sender;
-    if (!sender) return;
-    
-    const items = message.items;
-    const textItems = items.filter(item => item instanceof TextChatItem) as TextChatItem[];
-    const COMMAND_PREFIX = '!'
-
-    textItems.forEach(async item => {
-        if (!item.fromMe) return;
-        if (!item.text.startsWith(COMMAND_PREFIX)) return;
-        const [ command, ...args ] = item.text.substring(COMMAND_PREFIX.length).split(' ');
-
-        switch (command) {
-            case "tapback":
-                const [ rawTapback ] = args;
-                const tapback = +rawTapback;
-                if (![2000, 2001, 2002, 2003, 2004, 2005, 3000, 3001, 3002, 3003, 3004, 3005].includes(tapback)) return;
-                item.tapback(tapback);
-                break;
-            case "echo":
-                message.chat.sendText(args.join(' '))
-                break;
-            case "echo-repeat":
-                const [ rawRepeat, ...textParts ] = args;
-                const repeat = +rawRepeat;
-                if (isNaN(repeat)) { return }
-
-                for (let i = 0; i < repeat; i++) {
-                    await item.chat.sendText(textParts.join(' '));
-                }
-        }
-    });
+    console.log(`Message Received ${message.guid}`)
 });
 
 client.on(ChatParticipantsChanged, chat => {
@@ -55,6 +73,6 @@ client.on(ChatJoinStateUpdated, async chat => {
 
 client.on(ChatDisplayNameUpdated, chat => {
     console.log(`Chat ${chat.guid} display name changed to ${chat.displayName}`)
-})
+});
 
 client.connect();

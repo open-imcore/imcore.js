@@ -41,11 +41,11 @@ export class ChatItem<T extends ChatItemRepresentation = ChatItemRepresentation>
      * Load all tapbacks for the item
      */
     async tapbacks(): Promise<Tapback[]> {
-        const { representations: rawTapbacks } = await this.get(chatMessageTapbacks(this.chatGUID, this.messageGUID), {
+        const { data: { representations: rawTapbacks } } = await this.get(chatMessageTapbacks(this.chatGUID, this.messageGUID), {
             params: {
                 part: this.part
             }
-        }) as { representations: TapbackRepresentation[] }
+        }) as { data: { representations: TapbackRepresentation[] } }
 
         return rawTapbacks.map(t => new Tapback(this.client, t));
     }

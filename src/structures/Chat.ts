@@ -68,12 +68,12 @@ export class Chat extends Base<ChatRepresentation> implements Omit<ChatRepresent
      * @param limit number of messages to load
      */
     async loadMessages(beforeGUID: string, limit: number = 50): Promise<Message[]> {
-        const { items: rawMessages } = await this.get(chatMessages(this.guid), {
+        const { data: { items: rawMessages } } = await this.get(chatMessages(this.guid), {
             params: {
                 before: beforeGUID,
                 limit
             }
-        }) as { items: MessageRepresentation[] }
+        }) as { data: { items: MessageRepresentation[] } }
 
         return rawMessages.map(message => this.client.messages.add(message));
     }

@@ -16,7 +16,7 @@ export class Tapback extends Base<TapbackRepresentation> implements Omit<Tapback
         this.associatedMessageGUID = associatedMessageGUID;
         this.associatedMessageType = associatedMessageType;
         this._handle = handle;
-
+        
         return this;
     }
 }
