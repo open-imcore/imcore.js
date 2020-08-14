@@ -16,6 +16,22 @@ export abstract class BaseManager<T extends Base, R = any> {
     protected constructor(public client: Client, protected Structure: ConstructorType<T>, protected idKey: keyof T & keyof R) {
         
     }
+    
+    get map(): Collection<string, T>['map'] {
+        return this.cache.map.bind(this.cache);
+    }
+
+    get forEach(): Collection<string, T>['forEach'] {
+        return this.cache.forEach.bind(this.cache);
+    }
+
+    get allKeys(): string[] {
+        return Array.from(this.cache.keys());
+    }
+
+    get allValues(): T[] {
+        return Array.from(this.cache.values());
+    }
 
     add(data: R) {
         const id = data[this.idKey] as unknown as string;

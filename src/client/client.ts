@@ -5,7 +5,7 @@ import { ContactsManager } from "../managers/ContactsManager";
 import { HandleManager } from "../managers/HandleManager";
 import { MessageManager } from "../managers/MessageManager";
 import { Contact } from "../structures/Contact";
-import { SearchResult, AttachmentRepresentation } from "../types";
+import { SearchResult } from "../types";
 import { DefaultOptions } from "../util/Constants";
 import { IMCoreEvent, IMCoreEventMap } from "./client-events";
 import { searchMessages, attachments } from "./rest/endpoints";
@@ -36,6 +36,8 @@ export declare interface Client {
     on(event: string, listener: Function): this;
 }
 
+type XHR = typeof XMLHttpRequest;
+
 export class Client extends EventEmitter {
     public handles: HandleManager = new HandleManager(this);
     public contacts: ContactsManager = new ContactsManager(this);
@@ -60,17 +62,22 @@ export class Client extends EventEmitter {
     }
 
     public async upload(attachment: Buffer | Uint8Array | ArrayBuffer) {
-        const FileType = await import("file-type");
+        if (typeof XMLHttpRequest === "undefined") {
+            var { XMLHttpRequest }: { XMLHttpRequest: XHR } = await import("xmlhttprequest");
+        }
 
-        const mime = await FileType.fromBuffer(attachment);
-        
-        const { data: attachmentRepresentation } = await this.http.post(attachments, attachment, {
-            headers: {
-                'content-type': mime.mime
+        return new Promise((resolve, reject) => {
+            const request = new XMLHttpRequest();
+            request.open("POST", `${this.options.apiHost}${attachments}`, true);
+            request.setRequestHeader("Content-Type", "application/octet-stream");
+            request.send(attachment);
+
+            request.onload = () => {
+                resolve(JSON.parse(request.responseText));
             }
-        }) as { data: AttachmentRepresentation }
 
-        return attachmentRepresentation
+            request.onerror = reject;
+        });
     }
 
     /**

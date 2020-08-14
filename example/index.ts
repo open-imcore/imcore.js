@@ -1,14 +1,13 @@
-import { ChatDisplayNameUpdated, ChatJoinStateUpdated, ChatParticipantsChanged, Client, MessageReceived, MessageUpdated, Ready } from "../src";
+import { ChatDisplayNameUpdated, ChatJoinStateUpdated, ChatParticipantsChanged, Client, MessageReceived, MessageUpdated, Ready, Chat, PluginChatItem } from "../src";
+import inquirer = require("inquirer");
+import fs = require("fs-extra");
 
 const client = new Client();
 
-var running = false
+var running = true
 client.on(Ready, () => {
     if (!running) {
-        (async function() {
-            const inquirer = await import("inquirer");
-            const fs = await import("fs-extra");
-        
+        (async () => {
             while (true) {
                 const { instruction } = await inquirer.prompt({
                     type: "list",
@@ -39,14 +38,36 @@ client.on(Ready, () => {
                             continue
                         }
 
-                        const data = await fs.readFile(filePath);
+                        try {
+                            const data = await fs.readFile(filePath);
 
-                        const attachment = await client.upload(data);
-
-                        console.log(attachment);
+                            console.log(await client.upload(data));
+                        } catch (e) {
+                            console.log(e)
+                        }
                         
                         break;
                     case "send-message":
+                        const { chat, text }: { chat: Chat, text: string } = await inquirer.prompt([
+                            {
+                                type: "list",
+                                name: "chat",
+                                message: "What chat are you sending a message to?",
+                                choices: client.chats.map(chat => ({
+                                    name: chat.prettyName,
+                                    value: chat
+                                }))
+                            }, {
+                                type: "input",
+                                name: "text",
+                                message: "What message are you sending?"
+                            }
+                        ]);
+
+                        const messages = await chat.sendText(text);
+
+                        console.log(`Sent message wiht GUID ${messages.map(m => m.guid).join(', ')}`)
+                        
                         break;
                 }
             }
@@ -55,12 +76,26 @@ client.on(Ready, () => {
     }
 });
 
+client.on('debug', ({ level, messages }) => console[level](...messages));
+
 client.on(MessageUpdated, message => {
     console.log(`Message Updated ${message.guid}`)
+
+    message.items.forEach(item => {
+        if (item instanceof PluginChatItem) {
+            console.log(JSON.stringify(item.plist))
+        }
+    })
 });
 
 client.on(MessageReceived, message => {
     console.log(`Message Received ${message.guid}`)
+
+    message.items.forEach(item => {
+        if (item instanceof PluginChatItem) {
+            console.log(JSON.stringify(item.plist))
+        }
+    });
 });
 
 client.on(ChatParticipantsChanged, chat => {

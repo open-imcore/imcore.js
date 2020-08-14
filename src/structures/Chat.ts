@@ -35,6 +35,14 @@ export class Chat extends Base<ChatRepresentation> implements Omit<ChatRepresent
     lastMessageTime: number;
     style: number;
 
+    get prettyName(): string {
+        if (this.displayName) return this.displayName;
+
+        const participants = this.participants;
+        if (participants.length === 1) return participants[0].name;
+        return participants.map(p => p.shortName).join(', ');
+    }
+
     get participants(): Handle[] {
         return this.participantIDs.map(id => this.client.handles.resolve(id));
     }
@@ -82,17 +90,17 @@ export class Chat extends Base<ChatRepresentation> implements Omit<ChatRepresent
      * Send a message with the given parameters
      * @param options message options
      */
-    async sendMessage(options: MessageOptions): Promise<Message> {
-        const { data: representation } = await this.post(chatMessages(this.guid), options);
+    async sendMessage(options: MessageOptions): Promise<Message[]> {
+        const { data: { messages: representations } }: { data: { messages: MessageRepresentation[] }} = await this.post(chatMessages(this.guid), options);
 
-        return this.client.messages.add(representation);
+        return representations.map(r => this.client.messages.add(r));
     }
 
     /**
      * Send a text message
      * @param text text to send
      */
-    async sendText(text: string): Promise<Message> {
+    async sendText(text: string): Promise<Message[]> {
         return this.sendMessage({
             parts: [
                 {

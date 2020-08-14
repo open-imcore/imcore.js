@@ -35,6 +35,6 @@ export class RatelimitResponseInterceptor extends ResponseInterceptor {
             })
         }
 
-        return error;
+        return Promise.reject(error)
     }
 }

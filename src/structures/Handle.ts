@@ -25,6 +25,10 @@ export class Handle extends Base<HandleRepresentation> implements HandleRepresen
         return this.client.contactForHandleID(this.id);
     }
 
+    get shortName() {
+        return this.contact?.firstName || this.contact?.nickname || this.contact?.lastName || this.id;
+    }
+
     get name() {
         return this.contact?.fullName || this.id;
     }
