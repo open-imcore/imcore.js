@@ -1,8 +1,7 @@
-import { ChatItemRepresentation, TapbackRepresentation } from "../types";
+import { ChatItemRepresentation } from "../types";
 import { Base } from "./Base";
 import { Client } from "../client/client";
-import { chatMessageTapbacks } from "../client/rest/endpoints";
-import { Tapback } from "./Tapback";
+import { Message } from "./Message";
 
 export enum TapbackStyle {
     heart = 2000,
@@ -20,34 +19,25 @@ export enum TapbackStyle {
 }
 
 export class ChatItem<T extends ChatItemRepresentation = ChatItemRepresentation> extends Base<T> implements ChatItemRepresentation {
-    constructor(client: Client, data: T, public messageGUID: string, public part: number) {
+    constructor(client: Client, data: T) {
         super(client, data)
     }
 
     /**
-     * Send a tapback with the given style
-     * @param style tapback style
+     * Send an associated message with the given style
+     * @param style association style
      */
-    async tapback(style: TapbackStyle) {
-        await this.post(chatMessageTapbacks(this.chatGUID, this.messageGUID), undefined, {
-            params: {
-                part: this.part,
-                type: style
-            }
-        })
+    async sendAssociatedMessage(style: TapbackStyle) {
+        await this.rest.sendAssociatedMessage(this.guid, style);
     }
 
     /**
-     * Load all tapbacks for the item
+     * Load all associated messages for the item
      */
-    async tapbacks(): Promise<Tapback[]> {
-        const { data: { representations: rawTapbacks } } = await this.get(chatMessageTapbacks(this.chatGUID, this.messageGUID), {
-            params: {
-                part: this.part
-            }
-        }) as { data: { representations: TapbackRepresentation[] } }
+    async associatedMessages(): Promise<Message[]> {
+        const associatedRepresentations = await this.rest.getAssociatedMessages(this.guid);
 
-        return rawTapbacks.map(t => new Tapback(this.client, t));
+        return associatedRepresentations.map(message => this.client.messages.add(message));
     }
 
     _patch({ guid, chatGUID, fromMe, time }: ChatItemRepresentation) {

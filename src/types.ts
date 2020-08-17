@@ -3,11 +3,10 @@ import { Contact } from "./structures/Contact";
 import { Handle } from "./structures/Handle";
 
 export declare interface ChatRepresentation {
-    guid: string;
     joinState: number;
     roomName?: string;
     displayName?: string;
-    groupID?: string;
+    groupID: string;
     participants: string[];
     lastAddressedHandleID?: string;
     unreadMessageCount?: number;

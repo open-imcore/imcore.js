@@ -5,7 +5,7 @@ import { ChatRepresentation } from "../types";
 
 export class ChatManager extends BaseManager<Chat, ChatRepresentation> {
     constructor(client: Client) {
-        super(client, Chat, "guid");
+        super(client, Chat, "groupID");
     }
 
     // fetch(id: string): Promise<Chat> {

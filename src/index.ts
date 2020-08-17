@@ -3,7 +3,7 @@ export { MessageReceived, MessageUpdated, MessageRemoved, ContactCreated, Contac
 export { AcknowledgmentChatItem } from "./structures/AcknowledgmentChatItem";
 export { AssociatedChatItem } from "./structures/AssociatedChatItem";
 export { AttachmentChatItem } from "./structures/AttachmentChatItem";
-export { Chat } from "./structures/Chat";
+export { Chat, ChatJoinState } from "./structures/Chat";
 export { ChatItem } from "./structures/ChatItem";
 export { Contact } from "./structures/Contact";
 export { DateChatItem } from "./structures/DateChatItem";

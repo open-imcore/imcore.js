@@ -34,7 +34,7 @@ export class Message extends Base<MessageRepresentation> implements Omit<Message
     }
 
     get items(): AnyChatItem[] {
-        return this._items.map((item, index) => Util.resolveItem(item, this.client, this.guid, index)).filter(item => item)
+        return this._items.map((item) => Util.resolveItem(item, this.client)).filter(item => item)
     }
 
     get sender(): Handle | null {

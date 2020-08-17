@@ -27,22 +27,22 @@ export class Util {
      * @param item fuzzy item
      * @param client client instance
      */
-    static resolveItem(item: AnyChatItemModel, client: Client, messageGUID: string, part: number): AnyChatItem | null {
+    static resolveItem(item: AnyChatItemModel, client: Client): AnyChatItem | null {
         switch (item.type) {
-            case ChatItemType.date: return new DateChatItem(client, item.payload, messageGUID, part)
-            case ChatItemType.sender: return new SenderChatItem(client, item.payload, messageGUID, part)
-            case ChatItemType.participantChange: return new ParticipantChangeChatItem(client, item.payload, messageGUID, part)
-            case ChatItemType.attachment: return new AttachmentChatItem(client, item.payload, messageGUID, part)
-            case ChatItemType.status: return new StatusChatItem(client, item.payload, messageGUID, part)
-            case ChatItemType.groupAction: return new GroupActionChatItem(client, item.payload, messageGUID, part)
-            case ChatItemType.plugin: return new PluginChatItem(client, item.payload, messageGUID, part)
-            case ChatItemType.text: return new TextChatItem(client, item.payload, messageGUID, part)
-            case ChatItemType.acknowledgment: return new AcknowledgmentChatItem(client, item.payload, messageGUID, part)
-            case ChatItemType.associated: return new AssociatedChatItem(client, item.payload, messageGUID, part)
+            case ChatItemType.date: return new DateChatItem(client, item.payload)
+            case ChatItemType.sender: return new SenderChatItem(client, item.payload)
+            case ChatItemType.participantChange: return new ParticipantChangeChatItem(client, item.payload)
+            case ChatItemType.attachment: return new AttachmentChatItem(client, item.payload)
+            case ChatItemType.status: return new StatusChatItem(client, item.payload)
+            case ChatItemType.groupAction: return new GroupActionChatItem(client, item.payload)
+            case ChatItemType.plugin: return new PluginChatItem(client, item.payload)
+            case ChatItemType.text: return new TextChatItem(client, item.payload)
+            case ChatItemType.acknowledgment: return new AcknowledgmentChatItem(client, item.payload)
+            case ChatItemType.associated: return new AssociatedChatItem(client, item.payload)
             case ChatItemType.message: return new Message(client, item.payload)
-            case ChatItemType.phantom: return new StubChatItem(client, item.payload, messageGUID, part)
-            case ChatItemType.groupTitle: return new GroupTitleChatItem(client, item.payload, messageGUID, part)
-            case ChatItemType.typing: return new TypingChatItem(client, item.payload, messageGUID, part)
+            case ChatItemType.phantom: return new StubChatItem(client, item.payload)
+            case ChatItemType.groupTitle: return new GroupTitleChatItem(client, item.payload)
+            case ChatItemType.typing: return new TypingChatItem(client, item.payload)
             default: return null
         }
     }

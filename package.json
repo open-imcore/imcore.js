@@ -1,8 +1,11 @@
 {
-  "name": "node-typescript-boilerplate",
-  "version": "0.0.0",
-  "description": "Minimalistic boilerplate to quick-start Node.js development in TypeScript.",
+  "name": "@open-imcore/imcore.js",
+  "version": "0.0.1-alpha.1",
+  "description": "TypeScript SDK for interacting with the iMessage API",
   "main": "build/index.ts",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
   "engines": {
     "node": ">= 12.13 <13"
   },
@@ -45,6 +48,7 @@
     "buffer": "^5.6.0",
     "file-type": "^14.7.1",
     "jscenekit": "^0.5.2",
+    "markov-strings": "git+https://github.com/scambier/markov-strings.git#develop",
     "pako": "^1.0.11",
     "tslib": "~2.0.0",
     "ws": "^7.3.1",

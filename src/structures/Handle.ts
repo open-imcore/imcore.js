@@ -1,7 +1,6 @@
 import { Base } from "./Base";
 import { HandleRepresentation } from "../types";
 import { Contact } from "./Contact";
-import { handleBlock } from "../client/rest/endpoints";
 
 export class Handle extends Base<HandleRepresentation> implements HandleRepresentation {
     id: string;
@@ -11,14 +10,14 @@ export class Handle extends Base<HandleRepresentation> implements HandleRepresen
      * Block this handle
      */
     async block() {
-        await this.put(handleBlock(this.id));
+        await this.rest.block(this.id);
     }
 
     /**
      * Unblock this handle
      */
     async unblock() {
-        await this.delete(handleBlock(this.id));
+        await this.rest.unblock(this.id);
     }
 
     get contact(): Contact | null {

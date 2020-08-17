@@ -1,17 +1,19 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
+import { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import { EventEmitter } from "events";
 import { ChatManager } from "../managers/ChatManager";
 import { ContactsManager } from "../managers/ContactsManager";
 import { HandleManager } from "../managers/HandleManager";
 import { MessageManager } from "../managers/MessageManager";
 import { Contact } from "../structures/Contact";
-import { SearchResult } from "../types";
+import { SearchResult, AttachmentRepresentation } from "../types";
 import { DefaultOptions } from "../util/Constants";
 import { IMCoreEvent, IMCoreEventMap } from "./client-events";
-import { searchMessages, attachments } from "./rest/endpoints";
-import { RatelimitResponseInterceptor } from "./rest/ratelimit";
 import { EventHandler } from "./websocket/EventHandler";
 import { WebSocketManager } from "./websocket/manager";
+import { Message } from "../structures/Message";
+import { HTTPClient, MessageDeletionOptions, ChatCreationOptions } from "./rest/client";
+import { Handle } from "../structures/Handle";
+import { Chat } from "../structures/Chat";
 
 const { Axios } = require('axios');
 Axios.prototype.delete = function (url, data, config) {
@@ -22,7 +24,7 @@ Axios.prototype.delete = function (url, data, config) {
     }))
 }
 
-declare interface PatchedAxios extends AxiosInstance {
+export declare interface PatchedAxios extends AxiosInstance {
     delete<T = any, R = AxiosResponse<T>>(url: string, data?: any, config?: AxiosRequestConfig): Promise<R>;
 }
 
@@ -36,8 +38,6 @@ export declare interface Client {
     on(event: string, listener: Function): this;
 }
 
-type XHR = typeof XMLHttpRequest;
-
 export class Client extends EventEmitter {
     public handles: HandleManager = new HandleManager(this);
     public contacts: ContactsManager = new ContactsManager(this);
@@ -47,53 +47,90 @@ export class Client extends EventEmitter {
     public readonly ready = false;
     private socket = new WebSocketManager(this.options.gateway);
     protected handler = new EventHandler(this, this.socket, () => this.emit("ready"));
-    public http: PatchedAxios = axios.create({
-        baseURL: this.options.apiHost
-    })
+    public rest: HTTPClient;
 
     public constructor(public options: ClientOptions = DefaultOptions) {
         super();
 
-        new RatelimitResponseInterceptor(this.http).register(this.http);
+        this.rest = new HTTPClient(options);
 
         this.on("ready", () => {
             (this as any).ready = true;
         });
     }
 
-    public async upload(attachment: Buffer | Uint8Array | ArrayBuffer) {
-        if (typeof XMLHttpRequest === "undefined") {
-            var { XMLHttpRequest }: { XMLHttpRequest: XHR } = await import("xmlhttprequest");
-        }
+    /**
+     * Load a message with the given GUID
+     * @param guid message to load
+     */
+    public async message(guid: string): Promise<Message> {
+        const message = await this.rest.getMessage(guid);
 
-        return new Promise((resolve, reject) => {
-            const request = new XMLHttpRequest();
-            request.open("POST", `${this.options.apiHost}${attachments}`, true);
-            request.setRequestHeader("Content-Type", "application/octet-stream");
-            request.send(attachment);
+        return this.messages.add(message);
+    }
 
-            request.onload = () => {
-                resolve(JSON.parse(request.responseText));
-            }
-
-            request.onerror = reject;
-        });
+    public async deleteMessages(options: MessageDeletionOptions[]): Promise<void> {
+        await this.rest.deleteMessages(options);
     }
 
     /**
-     * Search the database using a given query
+     * Search the database for messages using a given query
      * @param query query string
      * @param limit maximum number of results
      */
-    public async search(query: string, limit: number = 20): Promise<SearchResult[]> {
-        const { data: { results } } = await this.http.get(searchMessages, {
-            params: {
-                query,
-                limit
-            }
-        }) as { data: { results: SearchResult[] } };
+    public async searchMessages(query?: string, limit: number = 20): Promise<SearchResult[]> {
+        return this.rest.searchMessages({ query, limit });
+    }
 
-        return results;
+    /**
+     * Search the database for contacts using a given query
+     * @param search query string
+     * @param limit maximum number of results
+     */
+    public async searchContacts(search?: string, limit?: number): Promise<Contact[]> {
+        const results = await this.rest.getContacts({
+            search,
+            limit
+        });
+
+        results.strangers.forEach(handle => this.handles.add(handle));
+        
+        return results.contacts.map(contact => this.contacts.add(contact));
+    }
+
+    /**
+     * Gets an array of blocked handles
+     */
+    public async blockedHandles(): Promise<Handle[]> {
+        const handleIDs = await this.rest.getBlocklist();
+        
+        return handleIDs.map(handle => this.handles.resolve(handle)).filter(h => h);
+    }
+
+    /**
+     * Gets an array of chats sorted by the most recently updated
+     * @param limit maximum number of results
+     */
+    public async getChats(limit?: number): Promise<Chat[]> {
+        const chats = await this.rest.getChats(limit);
+
+        return chats.map(c => this.chats.add(c));
+    }
+
+    /**
+     * Creates a chat with the given options
+     * @param options options to use when creating the chat
+     */
+    public async createChat(options: ChatCreationOptions): Promise<Chat> {
+        return this.chats.add(await this.rest.createChat(options));
+    }
+
+    /**
+     * Uploads a file to the server and returns its new record
+     * @param attachment attachment to upload
+     */
+    public async upload(attachment: Parameters<this["rest"]["upload"]>[0]): Promise<AttachmentRepresentation> {
+        return this.rest.upload(attachment);
     }
 
     /**

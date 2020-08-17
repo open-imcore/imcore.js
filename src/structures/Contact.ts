@@ -14,12 +14,23 @@ export class Contact extends Base<ContactRepresentation> implements Omit<Contact
     countryCode?: string;
     hasPicture: boolean;
 
+    /**
+     * URL to download the image for this contact
+     */
+    get pictureURL(): string {
+        return this.rest.contactPhotoURL(this.id);
+    }
+
     get handles(): Handle[] {
         return this._handles.map(({ id }) => this.client.handles.resolve(id));
     }
 
     get handleIDs(): string[] {
         return this._handles.map(({ id }) => id);
+    }
+
+    async refresh(): Promise<this> {
+        return this._patch(await this.rest.getContact(this.id));
     }
 
     _patch({ id, firstName, middleName, lastName, fullName, nickname, countryCode, hasPicture, handles }: ContactRepresentation) {

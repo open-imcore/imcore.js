@@ -1,31 +1,22 @@
-import { ChatRepresentation, FuzzyHandle, MessageRepresentation } from "../types";
+import { ChatRepresentation, FuzzyHandle } from "../types";
 import { Base } from "./Base";
 import { Handle } from "./Handle";
-import { chatParticipants, chatMessages, chatJoin, chatName } from "../client/rest/endpoints";
 import { Util } from "../Util";
 import { Message } from "./Message";
+import { MessageOptions } from "../client/rest/client";
 
-export interface MessagePartOptions {
-    type: "text" | "attachment";
-    details: string;
-}
-
-export interface MessageOptions {
-    subject?: string;
-    parts: MessagePartOptions[];
-    isAudioMessage?: boolean;
-    flags?: number;
-    balloonBundleID?: string;
-    payloadData?: string;
-    expressiveSendStyleID?: string;
+export enum ChatJoinState {
+    removed = 0,
+    unknown = 1,
+    unknown1 = 2,
+    joined = 3
 }
 
 export class Chat extends Base<ChatRepresentation> implements Omit<ChatRepresentation, "participants"> {
-    guid: string;
     joinState: number;
     roomName?: string;
     displayName?: string;
-    groupID?: string;
+    groupID: string;
     participantIDs: string[];
     lastAddressedHandleID?: string;
     unreadMessageCount?: number;
@@ -52,12 +43,26 @@ export class Chat extends Base<ChatRepresentation> implements Omit<ChatRepresent
     }
 
     /**
+     * Refreshes the participants and returns an updated array of handles
+     */
+    async refreshParticipants(): Promise<Handle[]> {
+        this.participantIDs = await this.rest.chatParticipants(this.groupID);
+
+        return this.participants;
+    }
+
+    /**
+     * Refreshes the object with the latest record from the API
+     */
+    async refresh(): Promise<this> {
+        return this._patch(await this.rest.getChat(this.groupID));
+    }
+
+    /**
      * Rejoin a chat. Doesn't work well.
      */
     async join(): Promise<Chat> {
-        const { data: resolved } = await this.get(chatJoin(this.guid));
-
-        return this._patch(resolved);
+        return this._patch(await this.rest.joinChat(this.groupID));
     }
 
     /**
@@ -65,23 +70,26 @@ export class Chat extends Base<ChatRepresentation> implements Omit<ChatRepresent
      * @param name new name to assign
      */
     async rename(name: string): Promise<Chat> {
-        const { data: resolved } = await this.patch(chatName(this.guid), { name });
+        return this._patch(await this.rest.renameChat(this.groupID, name));
+    }
 
-        return this._patch(resolved);
+    /**
+     * Deletes the current chat
+     */
+    async delete(): Promise<Chat> {
+        return this._patch(await this.rest.deleteChat(this.groupID));
     }
 
     /**
      * Loads messages before a given GUID
-     * @param beforeGUID guid to mark as the start
+     * @param before guid to mark as the start
      * @param limit number of messages to load
      */
-    async loadMessages(beforeGUID: string, limit: number = 50): Promise<Message[]> {
-        const { data: { items: rawMessages } } = await this.get(chatMessages(this.guid), {
-            params: {
-                before: beforeGUID,
-                limit
-            }
-        }) as { data: { items: MessageRepresentation[] } }
+    async loadMessages(before?: string, limit: number = 50): Promise<Message[]> {
+        const rawMessages = await this.rest.getMessages(this.groupID, {
+            before,
+            limit
+        });
 
         return rawMessages.map(message => this.client.messages.add(message));
     }
@@ -91,7 +99,7 @@ export class Chat extends Base<ChatRepresentation> implements Omit<ChatRepresent
      * @param options message options
      */
     async sendMessage(options: MessageOptions): Promise<Message[]> {
-        const { data: { messages: representations } }: { data: { messages: MessageRepresentation[] }} = await this.post(chatMessages(this.guid), options);
+        const representations = await this.rest.sendMessage(this.groupID, options);
 
         return representations.map(r => this.client.messages.add(r));
     }
@@ -130,19 +138,12 @@ export class Chat extends Base<ChatRepresentation> implements Omit<ChatRepresent
     private async toggleParticipants(participants: FuzzyHandle[], mode: "put" | "delete"): Promise<this> {
         const handles = participants.map(handle => Util.resolveHandle(handle)).filter(h => h) as string[]
 
-        const { data } = await this[mode](chatParticipants(this.guid), {
-            handles
-        });
-
-        if (typeof data === "object" && typeof data.handles === "object") {
-            this.participantIDs = data.handles;
-        }
+        this.participantIDs = await this.rest[mode === "put" ? "addChatParticipants" : "removeChatParticipants"](this.groupID, handles);
 
         return this;
     }
 
-    _patch({ guid, joinState, roomName, displayName, groupID, participants, lastAddressedHandleID, unreadMessageCount, messageFailureCount, service, lastMessageTime, lastMessage, style }: ChatRepresentation): this {
-        this.guid = guid;
+    _patch({ joinState, roomName, displayName, groupID, participants, lastAddressedHandleID, unreadMessageCount, messageFailureCount, service, lastMessageTime, lastMessage, style }: ChatRepresentation): this {
         this.joinState = joinState;
         this.roomName = roomName;
         this.displayName = displayName;
