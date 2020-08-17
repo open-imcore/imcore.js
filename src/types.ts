@@ -22,7 +22,7 @@ export declare interface SearchResult {
     isFromMe: boolean;
     time: number;
     acknowledgmentType: number;
-    chatGUID: string;
+    chatGroupID: string;
     text: string;
     guid: string;
 }
@@ -75,7 +75,7 @@ export declare interface BulkContactRepresentation {
 
 export declare interface ChatItemRepresentation {
     guid: string;
-    chatGUID: string;
+    chatGroupID: string;
     fromMe: boolean;
     time: number;
 }
@@ -128,10 +128,11 @@ export declare interface TextChatItemRepresentation extends ChatItemRepresentati
 export declare interface AcknowledgmentChatItemRepresentation extends ChatItemRepresentation {
     sender?: string;
     acknowledgmentType: number;
+    associatedGUID: string;
 }
 
 export declare interface TapbackRepresentation {
-    chatGUID: string;
+    chatGroupID: string;
     associatedMessageType: number;
     associatedMessageGUID: string;
     handle: string;

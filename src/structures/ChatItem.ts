@@ -40,9 +40,9 @@ export class ChatItem<T extends ChatItemRepresentation = ChatItemRepresentation>
         return associatedRepresentations.map(message => this.client.messages.add(message));
     }
 
-    _patch({ guid, chatGUID, fromMe, time }: ChatItemRepresentation) {
+    _patch({ guid, chatGroupID, fromMe, time }: ChatItemRepresentation) {
         this.guid = guid;
-        this.chatGUID = chatGUID;
+        this.chatGroupID = chatGroupID
         this.fromMe = fromMe;
         this.time = time;
 
@@ -50,7 +50,7 @@ export class ChatItem<T extends ChatItemRepresentation = ChatItemRepresentation>
     }
 
     guid: string;
-    chatGUID: string;
+    chatGroupID: string;
     fromMe: boolean;
     time: number;
 
@@ -59,6 +59,6 @@ export class ChatItem<T extends ChatItemRepresentation = ChatItemRepresentation>
     }
 
     get chat() {
-        return this.client.chats.resolve(this.chatGUID);
+        return this.client.chats.resolve(this.chatGroupID);
     }
 }

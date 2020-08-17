@@ -59,7 +59,9 @@ export class EventHandler {
 
         manager.on(EventType.itemsRemoved, ({ messages }) => {
             messages.forEach(id => {
-                this.client.emit(MessageRemoved, this.client.messages.delete(id));
+                const deleted = this.client.messages.delete(id);
+                if (!deleted) return;
+                this.client.emit(MessageRemoved, deleted);
             });
         });
 

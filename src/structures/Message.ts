@@ -21,16 +21,20 @@ export class Message extends Base<MessageRepresentation> implements Omit<Message
     description?: string;
     flags: number;
     guid: string;
-    chatGUID: string;
+    chatGroupID: string;
     fromMe: boolean;
     time: number;
+
+    toString(): string {
+        return `Message[guid: ${this.guid}; time: ${this.time}; timeDelivered: ${this.timeDelivered}; timePlayed: ${this.timePlayed}; isTypingMessage: ${this.isTypingMessage}; isCancelTypingMessage: ${this.isCancelTypingMessage}; isDelivered: ${this.isDelivered}; isAudioMessage: ${this.isAudioMessage}; flags: ${this.flags}; fromMe: ${this.fromMe}; items: ${this._items.map(({ type }) => type).join(', ')};]`
+    }
     
     get date() {
         return new Date(this.time);
     }
 
     get chat() {
-        return this.client.chats.resolve(this.chatGUID);
+        return this.client.chats.resolve(this.chatGroupID);
     }
 
     get items(): AnyChatItem[] {
@@ -45,7 +49,7 @@ export class Message extends Base<MessageRepresentation> implements Omit<Message
         return this.client.handles.resolve(this._subject);
     }
 
-    _patch({ sender, subject, timeDelivered, timePlayed, timeRead, messageSubject, isSOS, isTypingMessage, isCancelTypingMessage, isDelivered, isAudioMessage, description, flags, items, guid, chatGUID, fromMe, time }: MessageRepresentation): this {
+    _patch({ sender, subject, timeDelivered, timePlayed, timeRead, messageSubject, isSOS, isTypingMessage, isCancelTypingMessage, isDelivered, isAudioMessage, description, flags, items, guid, chatGroupID, fromMe, time }: MessageRepresentation): this {
         this._sender = sender;
         this._subject = subject;
         this._items = items;
@@ -61,7 +65,7 @@ export class Message extends Base<MessageRepresentation> implements Omit<Message
         this.description = description;
         this.flags = flags;
         this.guid = guid;
-        this.chatGUID = chatGUID;
+        this.chatGroupID = chatGroupID;
         this.fromMe = fromMe;
         this.time = time;
 

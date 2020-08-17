@@ -14,6 +14,10 @@ export class Contact extends Base<ContactRepresentation> implements Omit<Contact
     countryCode?: string;
     hasPicture: boolean;
 
+    toString(): string {
+        return `Contact[id: ${this.id}; firstName: ${this.firstName}; middleName: ${this.middleName}; lastName: ${this.lastName}; fullName: ${this.fullName}; nickname: ${this.nickname}; countryCode: ${this.countryCode}; hasPicture: ${this.hasPicture};]`
+    }
+
     /**
      * URL to download the image for this contact
      */

@@ -26,6 +26,10 @@ export class Chat extends Base<ChatRepresentation> implements Omit<ChatRepresent
     lastMessageTime: number;
     style: number;
 
+    toString(): string {
+        return `Chat[groupID: ${this.groupID}; joinState: ${this.joinState}; roomName: ${this.roomName}; displayName: ${this.displayName}; participants: [${this.participantIDs.join(', ')}]; lastAddressedHandleID: ${this.lastAddressedHandleID}; unreadMessageCount: ${this.unreadMessageCount}; messageFailureCount: ${this.messageFailureCount}; service: ${this.service}; lastMessage: ${this.lastMessage}; lastMessageTime: ${this.lastMessageTime}; style: ${this.style};]`
+    }
+
     get prettyName(): string {
         if (this.displayName) return this.displayName;
 
