@@ -1,11 +1,11 @@
-import { ChatItem } from "./ChatItem";
 import { TextChatItemRepresentation } from "../types";
+import { AcknowledgableChatItem } from "./AcknowledgableChatItem";
 
-export class TextChatItem extends ChatItem<TextChatItemRepresentation> implements TextChatItemRepresentation {
+export class TextChatItem extends AcknowledgableChatItem<TextChatItemRepresentation> implements Omit<TextChatItemRepresentation, "acknowledgments"> {
     text: string;
     html?: string;
 
-    _patch({ text, html, ...item }: TextChatItemRepresentation) {
+    _patch({ text, html, acknowledgments, ...item }: TextChatItemRepresentation) {
         this.text = text;
         this.html = html;
 

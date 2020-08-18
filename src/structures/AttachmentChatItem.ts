@@ -1,9 +1,13 @@
-import { ChatItem } from "./ChatItem";
 import { AttachmentChatItemRepresentation, AttachmentRepresentation } from "../types";
+import { AcknowledgableChatItem } from "./AcknowledgableChatItem";
 
-export class AttachmentChatItem extends ChatItem<AttachmentChatItemRepresentation> implements AttachmentChatItemRepresentation {
+export class AttachmentChatItem extends AcknowledgableChatItem<AttachmentChatItemRepresentation> implements Omit<AttachmentChatItemRepresentation, "acknowledgments"> {
     transferGUID: string;
     metadata?: AttachmentRepresentation;
+
+    toString() {
+        return `AttachmentChatItem[transferGUID: ${this.transferGUID}]`
+    }
 
     /**
      * The URL to download the attachment

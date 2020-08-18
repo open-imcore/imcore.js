@@ -1,8 +1,8 @@
-import { ChatItem } from "./ChatItem";
 import { PluginChatItemRepresentation, AttachmentRepresentation } from "../types";
 import { unarchiveBase64EncodedBPlist } from "../util/unarchiver";
+import { AcknowledgableChatItem } from "./AcknowledgableChatItem";
 
-export class PluginChatItem extends ChatItem<PluginChatItemRepresentation> implements PluginChatItemRepresentation {
+export class PluginChatItem extends AcknowledgableChatItem<PluginChatItemRepresentation> implements Omit<PluginChatItemRepresentation, "acknowledgments"> {
     payload: string;
     bundleID: string;
     attachments: AttachmentRepresentation[];

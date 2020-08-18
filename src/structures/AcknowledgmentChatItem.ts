@@ -1,17 +1,24 @@
 import { ChatItem } from "./ChatItem";
 import { AcknowledgmentChatItemRepresentation } from "../types";
 
+const associatedGUIDExtractor = () => /(?:\w+:)(?:(\d*)\/)?([\w-]+)/g
+
 export class AcknowledgmentChatItem extends ChatItem<AcknowledgmentChatItemRepresentation> implements Omit<AcknowledgmentChatItemRepresentation, "sender" | "associatedGUID"> {
     private _sender?: string;
     acknowledgmentType: number;
     private associatedGUID: string;
 
     get associatedMessagePart(): number {
-        return +/(?:\w+:(\d+))\/([\w-]+)/g.exec(this.associatedGUID)![1]
+        return +associatedGUIDExtractor().exec(this.associatedGUID)![1] ?? 0
     }
 
     get associatedMessageGUID(): string {
-        return /(?:\w+:(\d+))\/([\w-]+)/g.exec(this.associatedGUID)![2];
+        try {
+            return associatedGUIDExtractor().exec(this.associatedGUID)![2];
+        } catch {
+            console.log(this.associatedGUID);
+            return this.associatedGUID;
+        }
     }
     
     get sender() {

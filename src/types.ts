@@ -99,7 +99,7 @@ export declare interface AttachmentRepresentation {
     uti?: string;
 }
 
-export declare interface AttachmentChatItemRepresentation extends ChatItemRepresentation {
+export declare interface AttachmentChatItemRepresentation extends ChatItemAcknowledgableRepresentation {
     transferGUID: string;
     metadata?: AttachmentRepresentation;
 }
@@ -114,15 +114,19 @@ export declare interface GroupActionTranscriptChatItemRepresentation extends Cha
     sender: string;
 }
 
-export declare interface PluginChatItemRepresentation extends ChatItemRepresentation {
+export declare interface PluginChatItemRepresentation extends ChatItemAcknowledgableRepresentation {
     payload: string;
     bundleID: string;
     attachments: AttachmentRepresentation[];
 }
 
-export declare interface TextChatItemRepresentation extends ChatItemRepresentation {
+export declare interface TextChatItemRepresentation extends ChatItemAcknowledgableRepresentation {
     text: string;
     html?: string;
+}
+
+export declare interface ChatItemAcknowledgableRepresentation extends ChatItemRepresentation {
+    acknowledgments?: AcknowledgmentChatItemRepresentation[];
 }
 
 export declare interface AcknowledgmentChatItemRepresentation extends ChatItemRepresentation {

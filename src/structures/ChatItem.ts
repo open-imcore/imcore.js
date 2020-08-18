@@ -23,6 +23,10 @@ export class ChatItem<T extends ChatItemRepresentation = ChatItemRepresentation>
         super(client, data)
     }
 
+    toString() {
+        return this.constructor.name;
+    }
+
     /**
      * Send an associated message with the given style
      * @param style association style

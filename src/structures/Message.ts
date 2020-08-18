@@ -26,7 +26,7 @@ export class Message extends Base<MessageRepresentation> implements Omit<Message
     time: number;
 
     toString(): string {
-        return `Message[guid: ${this.guid}; time: ${this.time}; timeDelivered: ${this.timeDelivered}; timePlayed: ${this.timePlayed}; isTypingMessage: ${this.isTypingMessage}; isCancelTypingMessage: ${this.isCancelTypingMessage}; isDelivered: ${this.isDelivered}; isAudioMessage: ${this.isAudioMessage}; flags: ${this.flags}; fromMe: ${this.fromMe}; items: ${this._items.map(({ type }) => type).join(', ')};]`
+        return `Message[guid: ${this.guid}; time: ${this.time}; timeDelivered: ${this.timeDelivered}; timePlayed: ${this.timePlayed}; isTypingMessage: ${this.isTypingMessage}; isCancelTypingMessage: ${this.isCancelTypingMessage}; isDelivered: ${this.isDelivered}; isAudioMessage: ${this.isAudioMessage}; flags: ${this.flags}; fromMe: ${this.fromMe}; items: [${this.items.join(', ')}];]`
     }
     
     get date() {
