@@ -1,9 +1,15 @@
-import { ChatRepresentation, FuzzyHandle } from "../types";
+import {
+  ChatPropertyListRepresentation,
+  ChatRepresentation,
+  FuzzyHandle,
+} from '../types';
 import { Base } from "./Base";
 import { Handle } from "./Handle";
 import { Util } from "../Util";
 import { Message } from "./Message";
 import { MessageOptions } from "../client/rest/client";
+import { MessageReceived } from '..';
+import { IMCoreEvent } from '../client/client-events';
 
 export enum ChatJoinState {
     removed = 0,
@@ -12,8 +18,13 @@ export enum ChatJoinState {
     joined = 3
 }
 
+export enum ChatStyle {
+  group = 43,
+  single = 45
+}
+
 export class Chat extends Base<ChatRepresentation> implements Omit<ChatRepresentation, "participants"> {
-    joinState: number;
+    joinState: ChatJoinState;
     roomName?: string;
     displayName?: string;
     groupID: string;
@@ -24,7 +35,9 @@ export class Chat extends Base<ChatRepresentation> implements Omit<ChatRepresent
     service?: string;
     lastMessage?: string;
     lastMessageTime: number;
-    style: number;
+    style: ChatStyle;
+    readReceipts: boolean;
+    ignoreAlerts: boolean;
 
     toString(): string {
         return `Chat[groupID: ${this.groupID}; joinState: ${this.joinState}; roomName: ${this.roomName}; displayName: ${this.displayName}; participants: [${this.participantIDs.join(', ')}]; lastAddressedHandleID: ${this.lastAddressedHandleID}; unreadMessageCount: ${this.unreadMessageCount}; messageFailureCount: ${this.messageFailureCount}; service: ${this.service}; lastMessage: ${this.lastMessage}; lastMessageTime: ${this.lastMessageTime}; style: ${this.style};]`
@@ -41,9 +54,32 @@ export class Chat extends Base<ChatRepresentation> implements Omit<ChatRepresent
     get participants(): Handle[] {
         return this.participantIDs.map(id => this.client.handles.resolve(id));
     }
-    
+
     set participants(participants: Handle[]) {
         this.participantIDs = participants.map(p => p.id);
+    }
+
+    /**
+     * Updates the properties of this chat
+     * @param properties properties to apply
+     */
+    async updateProperties(properties: Partial<ChatPropertyListRepresentation>): Promise<this> {
+        return this._patch_configuration(await this.client.rest.editProperties(this.groupID, properties));
+    }
+
+    /**
+     * Sends a typing indicator or cancel typing indicator
+     * @param isTyping whether we are typing
+     */
+    async typing(isTyping = true) {
+        await this.client.rest.setTyping(this.groupID, isTyping);
+    }
+
+    /**
+     * Marks all messages in the chat as read
+     */
+    async markAllMessagesAsRead(): Promise<void> {
+        await this.client.rest.readAllMessages(this.groupID)
     }
 
     /**
@@ -73,7 +109,7 @@ export class Chat extends Base<ChatRepresentation> implements Omit<ChatRepresent
      * Rename the chat
      * @param name new name to assign
      */
-    async rename(name: string): Promise<Chat> {
+    async rename(name: string | null): Promise<Chat> {
         return this._patch(await this.rest.renameChat(this.groupID, name));
     }
 
@@ -95,7 +131,10 @@ export class Chat extends Base<ChatRepresentation> implements Omit<ChatRepresent
             limit
         });
 
-        return rawMessages.map(message => this.client.messages.add(message));
+        return await Promise.all(rawMessages.map(message => this.client.messages.add(message))).then(messages => {
+          this.client.emit(IMCoreEvent.historyLoaded, messages);
+          return messages;
+        });
     }
 
     /**
@@ -105,7 +144,10 @@ export class Chat extends Base<ChatRepresentation> implements Omit<ChatRepresent
     async sendMessage(options: MessageOptions): Promise<Message[]> {
         const representations = await this.rest.sendMessage(this.groupID, options);
 
-        return representations.map(r => this.client.messages.add(r));
+        return await Promise.all(representations.map(r => this.client.messages.add(r))).then(messages => {
+          messages.forEach(message => this.client.emit(MessageReceived, message));
+          return messages;
+        });
     }
 
     /**
@@ -147,7 +189,14 @@ export class Chat extends Base<ChatRepresentation> implements Omit<ChatRepresent
         return this;
     }
 
-    _patch({ joinState, roomName, displayName, groupID, participants, lastAddressedHandleID, unreadMessageCount, messageFailureCount, service, lastMessageTime, lastMessage, style }: ChatRepresentation): this {
+    _patch_configuration({ readReceipts, ignoreAlerts }: ChatPropertyListRepresentation): this {
+        this.readReceipts = readReceipts;
+        this.ignoreAlerts = ignoreAlerts;
+
+        return this;
+    }
+
+    _patch({ joinState, roomName, displayName, groupID, participants, lastAddressedHandleID, unreadMessageCount, messageFailureCount, service, lastMessageTime, lastMessage, style, ignoreAlerts, readReceipts }: ChatRepresentation): this {
         this.joinState = joinState;
         this.roomName = roomName;
         this.displayName = displayName;
@@ -160,6 +209,8 @@ export class Chat extends Base<ChatRepresentation> implements Omit<ChatRepresent
         this.lastMessage = lastMessage;
         this.lastMessageTime = lastMessageTime;
         this.style = style;
+        this.ignoreAlerts = ignoreAlerts;
+        this.readReceipts = readReceipts;
 
         return this;
     }

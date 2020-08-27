@@ -1,10 +1,17 @@
 import { ChatItem } from "./ChatItem";
 import { ParticipantChangeTranscriptChatItemRepresentation } from "../types";
 
+export enum ParticipantChangeType {
+  addMember = 0,
+  removeMember = 1
+}
+
 export class ParticipantChangeChatItem extends ChatItem<ParticipantChangeTranscriptChatItemRepresentation> implements ParticipantChangeTranscriptChatItemRepresentation {
     initiatorID?: string;
     targetID?: string;
-    changeType: number;
+    changeType: ParticipantChangeType;
+
+    public isTranscriptLike = true
 
     get initiator() {
         if (!this.initiatorID) return null;

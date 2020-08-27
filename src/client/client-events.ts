@@ -5,6 +5,7 @@ import { Handle } from "../structures/Handle";
 
 export enum IMCoreEvent {
     messageReceived = "messageReceived",
+    historyLoaded = "historyLoaded",
     messageUpdated = "messageUpdated",
     messageRemoved = "messageRemoved",
     contactCreated = "contactCreated",
@@ -16,6 +17,8 @@ export enum IMCoreEvent {
     chatJoinStateUpdated = "chatJoinStateUpdated",
     chatRemoved = "chatRemoved",
     chatParticipantsChanged = "chatParticipantsChanged",
+    chatUnreadCountUpdated = "chatUnreadCountUpdated",
+    chatConfigurationChanged = "chatConfigurationChanged",
     blockListUpdated = "blockListUpdated",
     ready = "ready"
 }
@@ -23,6 +26,7 @@ export enum IMCoreEvent {
 export interface IMCoreEventMap {
     [IMCoreEvent.messageReceived]: Message;
     [IMCoreEvent.messageUpdated]: Message;
+    [IMCoreEvent.historyLoaded]: Message;
     [IMCoreEvent.messageRemoved]: Message;
     [IMCoreEvent.contactCreated]: Contact;
     [IMCoreEvent.contactUpdated]: Contact;
@@ -33,11 +37,14 @@ export interface IMCoreEventMap {
     [IMCoreEvent.chatJoinStateUpdated]: Chat;
     [IMCoreEvent.chatRemoved]: Chat;
     [IMCoreEvent.chatParticipantsChanged]: Chat;
+    [IMCoreEvent.chatUnreadCountUpdated]: Chat;
+    [IMCoreEvent.chatConfigurationChanged]: Chat;
     [IMCoreEvent.blockListUpdated]: Handle[];
     [IMCoreEvent.ready]: never;
 }
 
 export const MessageReceived = IMCoreEvent.messageReceived;
+export const HistoryLoaded = IMCoreEvent.historyLoaded;
 export const MessageUpdated = IMCoreEvent.messageUpdated;
 export const MessageRemoved = IMCoreEvent.messageRemoved;
 export const ContactCreated = IMCoreEvent.contactCreated;
@@ -47,7 +54,9 @@ export const ChatCreated = IMCoreEvent.chatCreated;
 export const ChatUpdated = IMCoreEvent.chatUpdated;
 export const ChatDisplayNameUpdated = IMCoreEvent.chatDisplayNameUpdated;
 export const ChatJoinStateUpdated = IMCoreEvent.chatJoinStateUpdated;
+export const ChatUnreadCountUpdated = IMCoreEvent.chatUnreadCountUpdated;
 export const ChatRemoved = IMCoreEvent.chatRemoved;
 export const ChatParticipantsChanged = IMCoreEvent.chatParticipantsChanged;
+export const ChatconfigurationChanged = IMCoreEvent.chatConfigurationChanged;
 export const BlockListUpdated = IMCoreEvent.blockListUpdated;
 export const Ready = IMCoreEvent.ready;

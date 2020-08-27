@@ -16,7 +16,8 @@ export enum ChatItemType {
     message = "message",
     phantom = "phantom",
     groupTitle = "groupTitle",
-    typing = "typing"
+    typing = "typing",
+    sticker = "sticker"
 }
 
 export const DefaultOptions: ClientOptions = {

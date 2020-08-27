@@ -31,6 +31,7 @@ export declare interface PatchedAxios extends AxiosInstance {
 export interface ClientOptions {
     apiHost: string;
     gateway: string;
+    preloadChat?: string;
 }
 
 export declare interface Client {
@@ -59,6 +60,10 @@ export class Client extends EventEmitter {
         });
     }
 
+    public async chat(groupID: string): Promise<Chat> {
+        return this.chats.resolve(groupID) || this.chats.add(await this.rest.getChat(groupID));
+    }
+
     /**
      * Load a message with the given GUID
      * @param guid message to load
@@ -69,6 +74,10 @@ export class Client extends EventEmitter {
         return this.messages.add(message);
     }
 
+    /**
+     * Deletes messages matching the provided parameters
+     * @param options deletion parameters
+     */
     public async deleteMessages(options: MessageDeletionOptions[]): Promise<void> {
         await this.rest.deleteMessages(options);
     }
@@ -94,8 +103,8 @@ export class Client extends EventEmitter {
         });
 
         results.strangers.forEach(handle => this.handles.add(handle));
-        
-        return results.contacts.map(contact => this.contacts.add(contact));
+
+        return Promise.all(results.contacts.map(contact => this.contacts.add(contact)));
     }
 
     /**
@@ -103,7 +112,7 @@ export class Client extends EventEmitter {
      */
     public async blockedHandles(): Promise<Handle[]> {
         const handleIDs = await this.rest.getBlocklist();
-        
+
         return handleIDs.map(handle => this.handles.resolve(handle)).filter(h => h);
     }
 
@@ -114,7 +123,7 @@ export class Client extends EventEmitter {
     public async getChats(limit?: number): Promise<Chat[]> {
         const chats = await this.rest.getChats(limit);
 
-        return chats.map(c => this.chats.add(c));
+        return Promise.all(chats.map(c => this.chats.add(c)));
     }
 
     /**
@@ -136,8 +145,8 @@ export class Client extends EventEmitter {
     /**
      * Connect to the event API
      */
-    public connect() {
-        this.socket.connect();
+    public connect(preload?: string) {
+        this.socket.connect(preload);
     }
 
     /**

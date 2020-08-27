@@ -14,9 +14,9 @@ export abstract class BaseManager<T extends Base, R = any> {
     protected cache: Collection<string, T> = new Collection();
 
     protected constructor(public client: Client, protected Structure: ConstructorType<T>, protected idKey: keyof T & keyof R) {
-        
+
     }
-    
+
     get map(): Collection<string, T>['map'] {
         return this.cache.map.bind(this.cache);
     }
@@ -33,7 +33,8 @@ export abstract class BaseManager<T extends Base, R = any> {
         return Array.from(this.cache.values());
     }
 
-    add(data: R) {
+    add(data: R): T | Promise<T> {
+        if (!data) return null;
         const id = data[this.idKey] as unknown as string;
         const existing = this.cache.get(id);
         if (existing && existing._patch) existing._patch(data);

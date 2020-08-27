@@ -2,8 +2,35 @@ import { PatchedAxios, ClientOptions } from "../client";
 import { DefaultOptions, ChatItemType } from "../../util/Constants";
 import Axios from "axios";
 import { RatelimitResponseInterceptor } from "./ratelimit";
-import { attachments, message, chats, chat, chatName, chatJoin, chatParticipants, chatMessages, associatedMessages, messages, handleBlocks, handleBlock, searchMessages, contacts, contact, attachment } from "./endpoints";
-import { AttachmentRepresentation, MessageRepresentation, ChatRepresentation, SearchResult, BulkContactRepresentation, ContactRepresentation, ChatItem } from "../../types";
+import {
+  attachments,
+  message,
+  chats,
+  chat,
+  chatName,
+  chatJoin,
+  chatParticipants,
+  chatMessages,
+  associatedMessages,
+  messages,
+  handleBlocks,
+  handleBlock,
+  searchMessages,
+  contacts,
+  contact,
+  attachment,
+  chatTyping, chatRead, chatProperties, resource,
+} from './endpoints';
+import {
+  AttachmentRepresentation,
+  MessageRepresentation,
+  ChatRepresentation,
+  SearchResult,
+  BulkContactRepresentation,
+  ContactRepresentation,
+  ChatItem,
+  ChatConfigurationRepresentation, ChatPropertyListRepresentation, ResourceMode,
+} from '../../types';
 
 type XHR = typeof XMLHttpRequest;
 
@@ -53,6 +80,14 @@ export class HTTPClient {
     }
 
     /**
+     * Resolves the URL of a resource with the given identifier
+     * @param identifier identifier to resolve
+     */
+    public resourceURL(identifier: string): string {
+        return `${this.options.apiHost}${resource(identifier)}`;
+    }
+
+    /**
      * Resolves the URL of an attachment with the given GUID
      * @param guid GUID of the URL to resolve
      */
@@ -66,6 +101,12 @@ export class HTTPClient {
      */
     public contactPhotoURL(contactID: string): string {
         return `${this.options.apiHost}${contact(contactID)}/photo`
+    }
+
+    public async getResourceMode(): Promise<ResourceMode> {
+        const { data: { mode } } = await this.get(resource("mode"));
+
+        return mode;
     }
 
     /**
@@ -137,8 +178,24 @@ export class HTTPClient {
      */
     public async getMessage(guid: string): Promise<MessageRepresentation> {
         const { data: messageRepresentation } = await this.get(message(guid));
-        
+
         return messageRepresentation;
+    }
+
+    /**
+     * Loads a set of message GUIDs from the API
+     * @param guids message GUIDs to load
+     */
+    public async bulkGetMessages(guids: string[]): Promise<MessageRepresentation[]> {
+        if (guids.length === 0) return [];
+
+        const { data: { messages: representations } } = await this.get(messages, {
+            params: {
+                guids: guids.join(",")
+            }
+        });
+
+        return representations;
     }
 
     /**
@@ -156,11 +213,14 @@ export class HTTPClient {
      * @param guid guid of the item to associate
      * @param type association type
      */
-    public async sendAssociatedMessage(guid: string, type: number): Promise<void> {
-        await this.post(associatedMessages, {
+    public async sendAssociatedMessage(guid: string, messageGUID: string, type: number): Promise<MessageRepresentation> {
+        const { data: message } = await this.post(associatedMessages, {
             type,
+            message: messageGUID,
             item: guid
         })
+
+        return message
     }
 
     /**
@@ -258,11 +318,49 @@ export class HTTPClient {
     }
 
     /**
+     * Marks all messages as read in a chat
+     * @param groupID groupID of the chat to mark as read
+     */
+    public async readAllMessages(groupID: string): Promise<void> {
+        await this.post(chatRead(groupID));
+    }
+
+    /**
+     * Gets the latest properties for a chat
+     * @param groupID groupID of the chat to query
+     */
+    public async getProperties(groupID: string): Promise<ChatConfigurationRepresentation> {
+        const { data: properties } = await this.get(chatProperties(groupID));
+
+        return properties;
+    }
+
+    /**
+     * Edits the properties of a given chat
+     * @param groupID groupID of the chat to mutate
+     * @param properties properties to apply
+     */
+    public async editProperties(groupID: string, properties: Partial<ChatPropertyListRepresentation>): Promise<ChatConfigurationRepresentation> {
+        const { data: newProperties } = await this.patch(chatProperties(groupID), properties);
+
+        return newProperties;
+    }
+
+    /**
+     * Sets whether or not the user is composing
+     * @param groupID
+     * @param isTyping
+     */
+    public async setTyping(groupID: string, isTyping: boolean): Promise<void> {
+        await this[isTyping ? "post" : "delete"](chatTyping(groupID));
+    }
+
+    /**
      * Renames a chat record, returning the updated chat
      * @param groupID groupID of the chat to update
      * @param name new name for the chat
      */
-    public async renameChat(groupID: string, name: string): Promise<ChatRepresentation> {
+    public async renameChat(groupID: string, name: string | null): Promise<ChatRepresentation> {
         const { data: chatRepresentation } = await this.patch(chatName(groupID), { name });
 
         return chatRepresentation;
@@ -270,7 +368,7 @@ export class HTTPClient {
 
     /**
      * Deletes a chat record from the API, returning the deleted chat
-     * 
+     *
      * @param groupID the group ID of the chat to delete
      */
     public async deleteChat(groupID: string): Promise<ChatRepresentation> {
@@ -292,7 +390,7 @@ export class HTTPClient {
 
         return chatRepresentations;
     }
-    
+
     /**
      * Inserts a chat record and returns it
      * @param options chat to create

@@ -8,6 +8,10 @@ export class ChatManager extends BaseManager<Chat, ChatRepresentation> {
         super(client, Chat, "groupID");
     }
 
+    async hardResolve(groupID: string): Promise<Chat> {
+      return this.resolve(groupID) || await this.add(await this.client.rest.getChat(groupID));
+    }
+
     // fetch(id: string): Promise<Chat> {
     //     throw new Error("Method not implemented.");
     // }

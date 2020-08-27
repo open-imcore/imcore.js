@@ -22,13 +22,21 @@ export declare interface WebSocketManager {
 export class WebSocketManager extends EventEmitter {
     private socket: WebSocket;
     private decoder = new TextDecoder("utf-8");
+    public readonly reconnectInterval = 5000
 
-    constructor(public readonly url: string, public readonly reconnectInterval: number = 5000) {
+    constructor(public readonly url: string) {
         super();
     }
 
-    connect() {
-        this.socket = new WebSocket(this.url);
+    connect(preload?: string) {
+        const compiled = new URL(this.url);
+        if (preload) {
+          compiled.searchParams.set("chatPreload", preload);
+        }
+
+        this.socket = new WebSocket(compiled.toString());
+
+        this.socket.binaryType = "arraybuffer";
 
         this.socket.addEventListener('message', message => {
             if (typeof message.data === "string") {
@@ -41,7 +49,7 @@ export class WebSocketManager extends EventEmitter {
         });
 
         this.socket.addEventListener('error', _ => {
-            
+
         });
 
         this.socket.addEventListener('close', event => {

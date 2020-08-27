@@ -1,11 +1,15 @@
 export const attachments = "/attachments"
+export const resource = (identifier: string) => `/resources/${identifier}`;
 export const attachment = (guid: string) => `${attachments}/${guid}`
 export const messages = "/messages"
 export const associatedMessages = `${messages}/associated`
 export const message = (guid: string) => `${messages}/${guid}`
 export const chats = "/chats"
 export const chat = (guid: string) => `${chats}/${guid}`
+export const chatTyping = (guid: string) => `${chat(guid)}/typing`;
+export const chatRead = (guid: string) => `${chat(guid)}/read`;
 export const chatJoin = (guid: string) => `${chat(guid)}/join`
+export const chatProperties = (guid: string) => `${chat(guid)}/properties`;
 export const chatName = (guid: string) => `${chat(guid)}/name`
 export const chatParticipants = (guid: string) => `${chat(guid)}/participants`
 export const chatMessages = (guid: string) => `${chat(guid)}/messages`

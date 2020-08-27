@@ -5,6 +5,8 @@ export class GroupTitleChatItem extends ChatItem<GroupTitleChangeItemRepresentat
     title: string;
     private _sender?: string;
 
+    public isTranscriptLike = true
+
     get sender() {
         if (!this._sender) return null;
         return this.client.handles.resolve(this._sender);

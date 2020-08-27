@@ -2,7 +2,16 @@ import { ChatItemType } from "./util/Constants";
 import { Contact } from "./structures/Contact";
 import { Handle } from "./structures/Handle";
 
-export declare interface ChatRepresentation {
+export declare interface ChatPropertyListRepresentation {
+  readReceipts: boolean;
+  ignoreAlerts: boolean;
+}
+
+export declare interface ChatConfigurationRepresentation extends ChatPropertyListRepresentation {
+  groupID: string;
+}
+
+export declare interface ChatRepresentation extends ChatConfigurationRepresentation {
     joinState: number;
     roomName?: string;
     displayName?: string;
@@ -80,6 +89,10 @@ export declare interface ChatItemRepresentation {
     time: number;
 }
 
+export declare interface AssociatedChatItemRepresentation extends ChatItemRepresentation {
+    associatedGUID: string;
+}
+
 export type DateTranscriptChatItemRepresentation = ChatItemRepresentation;
 
 export declare interface SenderTranscriptChatItemRepresentation extends ChatItemRepresentation {
@@ -107,6 +120,10 @@ export declare interface AttachmentChatItemRepresentation extends ChatItemAcknow
 export declare interface StatusChatItemRepresentation extends ChatItemRepresentation {
     statusType: number;
     itemGUID: string;
+    flags: number;
+    timeDelivered: number;
+    timeRead: number;
+    timePlayed: number;
 }
 
 export declare interface GroupActionTranscriptChatItemRepresentation extends ChatItemRepresentation {
@@ -120,19 +137,30 @@ export declare interface PluginChatItemRepresentation extends ChatItemAcknowledg
     attachments: AttachmentRepresentation[];
 }
 
+export enum TextPartType {
+  link = "link",
+  calendar = "calendar",
+  text = "text"
+}
+
+export declare interface TextPart {
+  type: TextPartType;
+  string: string;
+  data?: any;
+}
+
 export declare interface TextChatItemRepresentation extends ChatItemAcknowledgableRepresentation {
     text: string;
-    html?: string;
+    parts: TextPart[];
 }
 
 export declare interface ChatItemAcknowledgableRepresentation extends ChatItemRepresentation {
     acknowledgments?: AcknowledgmentChatItemRepresentation[];
 }
 
-export declare interface AcknowledgmentChatItemRepresentation extends ChatItemRepresentation {
+export declare interface AcknowledgmentChatItemRepresentation extends AssociatedChatItemRepresentation {
     sender?: string;
     acknowledgmentType: number;
-    associatedGUID: string;
 }
 
 export declare interface TapbackRepresentation {
@@ -154,6 +182,7 @@ export declare interface TypingChatItemRepresentation extends ChatItemRepresenta
 export declare interface MessageRepresentation extends ChatItemRepresentation {
     sender?: string;
     subject?: string;
+    service: string;
     timeDelivered: number;
     timePlayed: number;
     timeRead: number;
@@ -166,6 +195,34 @@ export declare interface MessageRepresentation extends ChatItemRepresentation {
     description?: string;
     flags: number;
     items: AnyChatItemModel[]
+}
+
+export enum ResourceMode {
+  SocialUI = "SocialUI",
+  ChatKit = "ChatKit",
+  Local = "Local"
+}
+
+export declare interface StickerRepresentation {
+  stickerGUID: string;
+  stickerPackGUID: string;
+  stickerHash: string;
+  stickerRecipe?: string;
+  bid?: string;
+  transcodedStickerHash?: string;
+  layoutIntent: number;
+  associatedLayoutIntent: number;
+  parentPreviewWidth: number;
+  xScalar: number;
+  yScalar: number;
+  scale: number;
+  rotation: number;
+  transcodedScale?: number;
+}
+
+export declare interface StickerChatItemRepresentation extends AssociatedChatItemRepresentation {
+  attachment?: AttachmentRepresentation;
+  sticker?: StickerRepresentation;
 }
 
 export declare interface StubChatItemRepresentation extends ChatItemRepresentation {
@@ -191,7 +248,8 @@ export declare type ChatItems = {
     [ChatItemType.message]: MessageRepresentation,
     [ChatItemType.phantom]: StubChatItemRepresentation,
     [ChatItemType.groupTitle]: GroupTitleChangeItemRepresentation,
-    [ChatItemType.typing]: TypingChatItemRepresentation
+    [ChatItemType.typing]: TypingChatItemRepresentation,
+    [ChatItemType.sticker]: StickerChatItemRepresentation
 }
 
 export declare interface ChatItem<T extends ChatItemType> {
@@ -199,6 +257,6 @@ export declare interface ChatItem<T extends ChatItemType> {
     payload: ChatItems[T];
 }
 
-export type AnyChatItemModel = ChatItem<ChatItemType.typing> | ChatItem<ChatItemType.date> | ChatItem<ChatItemType.sender> | ChatItem<ChatItemType.participantChange> | ChatItem<ChatItemType.attachment> | ChatItem<ChatItemType.status> | ChatItem<ChatItemType.groupAction> | ChatItem<ChatItemType.plugin> | ChatItem<ChatItemType.text> | ChatItem<ChatItemType.acknowledgment> | ChatItem<ChatItemType.associated> | ChatItem<ChatItemType.message> | ChatItem<ChatItemType.phantom> | ChatItem<ChatItemType.groupTitle>
+export type AnyChatItemModel = ChatItem<ChatItemType.sticker> | ChatItem<ChatItemType.typing> | ChatItem<ChatItemType.date> | ChatItem<ChatItemType.sender> | ChatItem<ChatItemType.participantChange> | ChatItem<ChatItemType.attachment> | ChatItem<ChatItemType.status> | ChatItem<ChatItemType.groupAction> | ChatItem<ChatItemType.plugin> | ChatItem<ChatItemType.text> | ChatItem<ChatItemType.acknowledgment> | ChatItem<ChatItemType.associated> | ChatItem<ChatItemType.message> | ChatItem<ChatItemType.phantom> | ChatItem<ChatItemType.groupTitle>
 
 export declare type FuzzyHandle = string | Handle | Contact

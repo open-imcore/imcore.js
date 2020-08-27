@@ -35,7 +35,7 @@ function cleanValue(nested: any, objects: SerializedValue[]): any {
             nested["NS.keys"].forEach((o, i, a) => {
                 a[i] = cleanValue(objects[o.UID], objects);
             });
-            
+
             resolved = nested["NS.keys"].reduce((obj, key, index) => {
                 return Object.assign(obj, { [key]: resolved[index] })
             }, {});
@@ -59,6 +59,8 @@ function walk(object: SerializedValue, objects: SerializedValue[]) {
 
 function deserializeArchiveRoot({ $top, $objects }: ArchiveRoot) {
     const rootIndex = $top.root.UID
+
+    console.log(JSON.stringify($objects));
 
     $objects.forEach(o => walk(o, $objects));
 

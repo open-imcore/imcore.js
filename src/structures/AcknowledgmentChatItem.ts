@@ -1,35 +1,30 @@
-import { ChatItem } from "./ChatItem";
+import { AssociatedChatItem } from "./AssociatedChatItem";
 import { AcknowledgmentChatItemRepresentation } from "../types";
 
-const associatedGUIDExtractor = () => /(?:\w+:)(?:(\d*)\/)?([\w-]+)/g
-
-export class AcknowledgmentChatItem extends ChatItem<AcknowledgmentChatItemRepresentation> implements Omit<AcknowledgmentChatItemRepresentation, "sender" | "associatedGUID"> {
+export class AcknowledgmentChatItem extends AssociatedChatItem<AcknowledgmentChatItemRepresentation> implements Omit<AcknowledgmentChatItemRepresentation, "sender" | "associatedGUID"> {
     private _sender?: string;
     acknowledgmentType: number;
-    private associatedGUID: string;
 
-    get associatedMessagePart(): number {
-        return +associatedGUIDExtractor().exec(this.associatedGUID)![1] ?? 0
+    get representation(): AcknowledgmentChatItemRepresentation {
+      return {
+        chatGroupID: this.chatGroupID,
+        time: this.time,
+        guid: this.guid,
+        fromMe: this.fromMe,
+        sender: this._sender,
+        acknowledgmentType: this.acknowledgmentType,
+        associatedGUID: this.associatedGUID
+      }
     }
 
-    get associatedMessageGUID(): string {
-        try {
-            return associatedGUIDExtractor().exec(this.associatedGUID)![2];
-        } catch {
-            console.log(this.associatedGUID);
-            return this.associatedGUID;
-        }
-    }
-    
     get sender() {
         if (!this._sender) return null;
         return this.client.handles.resolve(this._sender);
     }
 
-    _patch({ sender, acknowledgmentType, associatedGUID, ...item }: AcknowledgmentChatItemRepresentation) {
+    _patch({ sender, acknowledgmentType, ...item }: AcknowledgmentChatItemRepresentation) {
         this._sender = sender;
         this.acknowledgmentType = acknowledgmentType;
-        this.associatedGUID = associatedGUID;
 
         return super._patch(item);
     }

@@ -21,7 +21,8 @@ export class Contact extends Base<ContactRepresentation> implements Omit<Contact
     /**
      * URL to download the image for this contact
      */
-    get pictureURL(): string {
+    get pictureURL(): string | null {
+        if (!this.hasPicture) return null;
         return this.rest.contactPhotoURL(this.id);
     }
 

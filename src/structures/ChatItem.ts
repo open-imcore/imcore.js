@@ -1,7 +1,7 @@
 import { ChatItemRepresentation } from "../types";
 import { Base } from "./Base";
 import { Client } from "../client/client";
-import { Message } from "./Message";
+import { AcknowledgableChatItem } from "./AcknowledgableChatItem";
 
 export enum TapbackStyle {
     heart = 2000,
@@ -28,21 +28,21 @@ export class ChatItem<T extends ChatItemRepresentation = ChatItemRepresentation>
     }
 
     /**
-     * Send an associated message with the given style
-     * @param style association style
+     * Returns true if both chat items are acknowledgeable, have no acknowledgments, and were created within 60 seconds of eachother
+     * @param chatItem chat item to test
      */
-    async sendAssociatedMessage(style: TapbackStyle) {
-        await this.rest.sendAssociatedMessage(this.guid, style);
+    public isContiguousWith(chatItem: ChatItem): boolean {
+        if (chatItem instanceof AcknowledgableChatItem && this instanceof AcknowledgableChatItem) {
+            if (chatItem.acknowledgments.length > 0 || this.acknowledgments.length > 0) return false;
+            const { date: date1 } = chatItem, { date: date2 } = this;
+
+            return Math.abs((date1.getTime() - date2.getTime()) / 1000) <= 60;
+        }
+
+        return false;
     }
 
-    /**
-     * Load all associated messages for the item
-     */
-    async associatedMessages(): Promise<Message[]> {
-        const associatedRepresentations = await this.rest.getAssociatedMessages(this.guid);
-
-        return associatedRepresentations.map(message => this.client.messages.add(message));
-    }
+    public isTranscriptLike: boolean = false;
 
     _patch({ guid, chatGroupID, fromMe, time }: ChatItemRepresentation) {
         this.guid = guid;

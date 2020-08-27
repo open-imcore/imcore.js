@@ -1,9 +1,15 @@
 import { ChatItem } from "./ChatItem";
 import { GroupActionTranscriptChatItemRepresentation } from "../types";
 
+export enum GroupActionType {
+  left = 0
+}
+
 export class GroupActionChatItem extends ChatItem<GroupActionTranscriptChatItemRepresentation> implements Omit<GroupActionTranscriptChatItemRepresentation, "sender"> {
-    actionType: number;
+    actionType: GroupActionType;
     private _sender: string;
+
+    public isTranscriptLike = true
 
     get sender() {
         return this.client.handles.resolve(this._sender);

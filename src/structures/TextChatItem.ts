@@ -1,13 +1,17 @@
-import { TextChatItemRepresentation } from "../types";
+import { TextChatItemRepresentation, TextPart } from '../types';
 import { AcknowledgableChatItem } from "./AcknowledgableChatItem";
 
 export class TextChatItem extends AcknowledgableChatItem<TextChatItemRepresentation> implements Omit<TextChatItemRepresentation, "acknowledgments"> {
     text: string;
-    html?: string;
+    parts: TextPart[];
 
-    _patch({ text, html, acknowledgments, ...item }: TextChatItemRepresentation) {
+    toString() {
+        return `TextChatItem[text: ${this.text};]`
+    }
+
+    _patch({ text, parts, ...item }: TextChatItemRepresentation) {
         this.text = text;
-        this.html = html;
+        this.parts = parts;
 
         return super._patch(item);
     }

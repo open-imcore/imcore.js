@@ -1,5 +1,5 @@
 import { PluginChatItemRepresentation, AttachmentRepresentation } from "../types";
-import { unarchiveBase64EncodedBPlist } from "../util/unarchiver";
+import { unarchiveBase64EncodedBPlist } from "../util/unarchiverV2";
 import { AcknowledgableChatItem } from "./AcknowledgableChatItem";
 
 export class PluginChatItem extends AcknowledgableChatItem<PluginChatItemRepresentation> implements Omit<PluginChatItemRepresentation, "acknowledgments"> {
@@ -12,7 +12,7 @@ export class PluginChatItem extends AcknowledgableChatItem<PluginChatItemReprese
         this.payload = payload;
         this.bundleID = bundleID;
         this.attachments = attachments;
-        
+
         try {
             this.plist = unarchiveBase64EncodedBPlist(payload);
         } catch (e) {

@@ -18,6 +18,7 @@ import { Client } from "./client/client";
 import { Handle } from "./structures/Handle";
 import { Contact } from "./structures/Contact";
 import { TypingChatItem } from "./structures/TypingChatItem";
+import { StickerChatItem } from './structures/StickerChatItem';
 
 export type AnyChatItem = TextChatItem | DateChatItem | SenderChatItem | ParticipantChangeChatItem | AttachmentChatItem | StatusChatItem | GroupActionChatItem | PluginChatItem | AcknowledgmentChatItem | StubChatItem | GroupTitleChatItem | Message;
 
@@ -43,10 +44,11 @@ export class Util {
             case ChatItemType.phantom: return new StubChatItem(client, item.payload)
             case ChatItemType.groupTitle: return new GroupTitleChatItem(client, item.payload)
             case ChatItemType.typing: return new TypingChatItem(client, item.payload)
+            case ChatItemType.sticker: return new StickerChatItem(client, item.payload)
             default: return null
         }
     }
-    
+
     /**
      * Takes a fuzzy handle representation and returns a solid handle ID
      * @param handle fuzzy handle
