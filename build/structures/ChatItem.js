@@ -1,23 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ChatItem = exports.TapbackStyle = void 0;
+exports.ChatItem = void 0;
 const Base_1 = require("./Base");
 const AcknowledgableChatItem_1 = require("./AcknowledgableChatItem");
-var TapbackStyle;
-(function (TapbackStyle) {
-    TapbackStyle[TapbackStyle["heart"] = 2000] = "heart";
-    TapbackStyle[TapbackStyle["thumbsUp"] = 2001] = "thumbsUp";
-    TapbackStyle[TapbackStyle["thumbsDown"] = 2002] = "thumbsDown";
-    TapbackStyle[TapbackStyle["haha"] = 2003] = "haha";
-    TapbackStyle[TapbackStyle["exclamation"] = 2004] = "exclamation";
-    TapbackStyle[TapbackStyle["question"] = 2005] = "question";
-    TapbackStyle[TapbackStyle["revokeHeart"] = 3000] = "revokeHeart";
-    TapbackStyle[TapbackStyle["revokeThumbsUp"] = 3001] = "revokeThumbsUp";
-    TapbackStyle[TapbackStyle["revokeThumbsDown"] = 3002] = "revokeThumbsDown";
-    TapbackStyle[TapbackStyle["revokeHaha"] = 3003] = "revokeHaha";
-    TapbackStyle[TapbackStyle["revokeExclamation"] = 3004] = "revokeExclamation";
-    TapbackStyle[TapbackStyle["revokeQuestion"] = 3005] = "revokeQuestion";
-})(TapbackStyle = exports.TapbackStyle || (exports.TapbackStyle = {}));
 class ChatItem extends Base_1.Base {
     constructor(client, data) {
         super(client, data);

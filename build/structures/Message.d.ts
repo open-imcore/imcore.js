@@ -2,14 +2,13 @@ import { Handle } from "./Handle";
 import { AnyChatItem } from "../Util";
 import { Base } from "./Base";
 import { AcknowledgmentChatItem } from "./AcknowledgmentChatItem";
-import { TapbackStyle } from "./ChatItem";
 import { AttachmentChatItem } from "./AttachmentChatItem";
 import { TextChatItem } from "./TextChatItem";
 import { AcknowledgableChatItem } from "./AcknowledgableChatItem";
 import { StatusChatItem } from './StatusChatItem';
 import { AssociatedChatItem } from './AssociatedChatItem';
 import { IMService } from "../Constants";
-import { AttachmentRepresentation, MessageRepresentation } from "imcore-ajax-core";
+import { AttachmentRepresentation, MessageRepresentation, AcknowledgmentType } from "imcore-ajax-core";
 export declare class Message extends Base<MessageRepresentation> implements Omit<MessageRepresentation, "sender" | "subject" | "items"> {
     private _sender;
     private _subject;
@@ -37,7 +36,7 @@ export declare class Message extends Base<MessageRepresentation> implements Omit
     get textItems(): TextChatItem[];
     get attachmentItems(): AttachmentChatItem[];
     get acknowledgmentItem(): AcknowledgmentChatItem | null;
-    get acknowledgmentType(): TapbackStyle | null;
+    get acknowledgmentType(): AcknowledgmentType | null;
     get acknowledgedMessage(): Message | null;
     get acknowledgedMessageItem(): AcknowledgableChatItem | null;
     get acknowledgedMessagePart(): number | null;

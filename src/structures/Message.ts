@@ -2,14 +2,13 @@ import { Handle } from "./Handle";
 import { AnyChatItem, Util } from "../Util";
 import { Base } from "./Base";
 import { AcknowledgmentChatItem } from "./AcknowledgmentChatItem";
-import { TapbackStyle } from "./ChatItem";
 import { AttachmentChatItem } from "./AttachmentChatItem";
 import { TextChatItem } from "./TextChatItem";
 import { AcknowledgableChatItem } from "./AcknowledgableChatItem";
 import { StatusChatItem } from './StatusChatItem';
 import { AssociatedChatItem } from './AssociatedChatItem';
 import { IMService } from "../Constants";
-import { AttachmentRepresentation, MessageRepresentation } from "imcore-ajax-core";
+import { AttachmentRepresentation, MessageRepresentation, AcknowledgmentType } from "imcore-ajax-core";
 
 export class Message extends Base<MessageRepresentation> implements Omit<MessageRepresentation, "sender" | "subject" | "items"> {
 
@@ -59,7 +58,7 @@ export class Message extends Base<MessageRepresentation> implements Omit<Message
         return (this.items.find(item => item instanceof AcknowledgmentChatItem) as AcknowledgmentChatItem | undefined) || null;
     }
 
-    get acknowledgmentType(): TapbackStyle | null {
+    get acknowledgmentType(): AcknowledgmentType | null {
         return this.acknowledgmentItem?.acknowledgmentType || null;
     }
 

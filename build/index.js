@@ -43,7 +43,6 @@ Object.defineProperty(exports, "ChatJoinState", { enumerable: true, get: functio
 Object.defineProperty(exports, "ChatStyle", { enumerable: true, get: function () { return Chat_1.ChatStyle; } });
 var ChatItem_1 = require("./structures/ChatItem");
 Object.defineProperty(exports, "ChatItem", { enumerable: true, get: function () { return ChatItem_1.ChatItem; } });
-Object.defineProperty(exports, "TapbackStyle", { enumerable: true, get: function () { return ChatItem_1.TapbackStyle; } });
 var Contact_1 = require("./structures/Contact");
 Object.defineProperty(exports, "Contact", { enumerable: true, get: function () { return Contact_1.Contact; } });
 var DateChatItem_1 = require("./structures/DateChatItem");
@@ -74,5 +73,6 @@ var StickerChatItem_1 = require("./structures/StickerChatItem");
 Object.defineProperty(exports, "StickerChatItem", { enumerable: true, get: function () { return StickerChatItem_1.StickerChatItem; } });
 var imcore_ajax_core_1 = require("imcore-ajax-core");
 Object.defineProperty(exports, "TextPartType", { enumerable: true, get: function () { return imcore_ajax_core_1.TextPartType; } });
+Object.defineProperty(exports, "AcknowledgmentType", { enumerable: true, get: function () { return imcore_ajax_core_1.AcknowledgmentType; } });
 __exportStar(require("./Constants"), exports);
 //# sourceMappingURL=index.js.map

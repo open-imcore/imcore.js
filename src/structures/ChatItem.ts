@@ -3,21 +3,6 @@ import { Client } from "../client/client";
 import { AcknowledgableChatItem } from "./AcknowledgableChatItem";
 import { ChatItemRepresentation } from "imcore-ajax-core";
 
-export enum TapbackStyle {
-    heart = 2000,
-    thumbsUp = 2001,
-    thumbsDown = 2002,
-    haha = 2003,
-    exclamation = 2004,
-    question = 2005,
-    revokeHeart = 3000,
-    revokeThumbsUp = 3001,
-    revokeThumbsDown = 3002,
-    revokeHaha = 3003,
-    revokeExclamation = 3004,
-    revokeQuestion = 3005
-}
-
 export class ChatItem<T extends ChatItemRepresentation = ChatItemRepresentation> extends Base<T> implements ChatItemRepresentation {
     constructor(client: Client, data: T) {
         super(client, data)
