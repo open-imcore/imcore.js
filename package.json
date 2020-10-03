@@ -1,6 +1,6 @@
 {
   "name": "@open-imcore/imcore.js",
-  "version": "0.0.3.4",
+  "version": "0.0.3-beta.4",
   "description": "TypeScript SDK for interacting with the iMessage API",
   "main": "build/index.js",
   "types": "build/index.d.ts",
