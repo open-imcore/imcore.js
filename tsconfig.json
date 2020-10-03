@@ -16,6 +16,8 @@
     "noUnusedParameters": true,
     "noImplicitAny": false,
     "noImplicitThis": false,
+    "rootDir": "src",
+    "outDir": "build",
     "strictNullChecks": false
   },
   "include": [
