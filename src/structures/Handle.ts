@@ -1,23 +1,23 @@
+import { HandleFormat, HandleRepresentation } from "imcore-ajax-core";
 import { Base } from "./Base";
-import { HandleRepresentation } from "../types";
 import { Contact } from "./Contact";
 
 export class Handle extends Base<HandleRepresentation> implements HandleRepresentation {
     id: string;
-    isBusiness: boolean;
+    format: HandleFormat;
 
     /**
      * Block this handle
      */
     async block() {
-        await this.rest.block(this.id);
+        await this.rest.handles.block(this.id);
     }
 
     /**
      * Unblock this handle
      */
     async unblock() {
-        await this.rest.unblock(this.id);
+        await this.rest.handles.unblock(this.id);
     }
 
     get pictureURL(): string | null {
@@ -52,9 +52,9 @@ export class Handle extends Base<HandleRepresentation> implements HandleRepresen
         return this.contact?.fullName || this.id;
     }
 
-    _patch({ id, isBusiness }: HandleRepresentation) {
+    _patch({ id, format }: HandleRepresentation) {
         this.id = id;
-        this.isBusiness = isBusiness;
+        this.format = format;
 
         return this;
     }

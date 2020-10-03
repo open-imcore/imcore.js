@@ -1,7 +1,7 @@
-import { ChatItemRepresentation } from "../types";
 import { Base } from "./Base";
 import { Client } from "../client/client";
 import { AcknowledgableChatItem } from "./AcknowledgableChatItem";
+import { ChatItemRepresentation } from "imcore-ajax-core";
 
 export enum TapbackStyle {
     heart = 2000,
@@ -44,17 +44,17 @@ export class ChatItem<T extends ChatItemRepresentation = ChatItemRepresentation>
 
     public isTranscriptLike: boolean = false;
 
-    _patch({ guid, chatGroupID, fromMe, time }: ChatItemRepresentation) {
-        this.guid = guid;
-        this.chatGroupID = chatGroupID
+    _patch({ id, chatID, fromMe, time }: ChatItemRepresentation) {
+        this.id = id;
+        this.chatID = chatID
         this.fromMe = fromMe;
         this.time = time;
 
         return this;
     }
 
-    guid: string;
-    chatGroupID: string;
+    id: string;
+    chatID: string;
     fromMe: boolean;
     time: number;
 
@@ -63,6 +63,6 @@ export class ChatItem<T extends ChatItemRepresentation = ChatItemRepresentation>
     }
 
     get chat() {
-        return this.client.chats.resolve(this.chatGroupID);
+        return this.client.chats.resolve(this.chatID);
     }
 }

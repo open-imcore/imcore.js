@@ -1,5 +1,5 @@
+import { SenderTranscriptChatItemRepresentation } from "imcore-ajax-core";
 import { ChatItem } from "./ChatItem";
-import { SenderTranscriptChatItemRepresentation } from "../types";
 
 export class SenderChatItem extends ChatItem<SenderTranscriptChatItemRepresentation> implements SenderTranscriptChatItemRepresentation {
     handleID: string;

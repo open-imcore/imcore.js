@@ -8,7 +8,7 @@ const commands: Record<string, (message: Message, args: string[]) => any> = {
   chats(message) {
     const chats = message.client.chats.allValues;
     
-    const chatString = chats.map(chat => `Chat GroupID: ${chat.groupID}\nChat Participants: ${chat.participantIDs.join(',')}`).join('\n--------------\n');
+    const chatString = chats.map(chat => `Chat GroupID: ${chat.chatID}\nChat Participants: ${chat.participantIDs.join(',')}`).join('\n--------------\n');
 
     message.chat.sendText(chatString);
   },

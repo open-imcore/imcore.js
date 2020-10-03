@@ -1,7 +1,7 @@
 import { BaseManager } from "./BaseManager";
 import { Contact } from "../structures/Contact";
 import { Client } from "../client/client";
-import { ContactRepresentation } from "../types";
+import { ContactRepresentation } from "imcore-ajax-core";
 
 export class ContactsManager extends BaseManager<Contact, ContactRepresentation> {
     constructor(client: Client) {

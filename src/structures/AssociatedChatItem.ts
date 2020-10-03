@@ -1,28 +1,28 @@
+import { AssociatedChatItemRepresentation } from "imcore-ajax-core";
 import { ChatItem } from "./ChatItem";
-import { AssociatedChatItemRepresentation } from '../types';
 
-export const associatedGUIDExtractor = () => /(?:\w+:)(?:(\d*)\/)?([\w-]+)/g
+export const associatedIDExtractor = () => /(?:\w+:)(?:(\d*)\/)?([\w-]+)/g
 
 export class AssociatedChatItem<T extends AssociatedChatItemRepresentation = AssociatedChatItemRepresentation> extends ChatItem<T> implements AssociatedChatItemRepresentation {
-    associatedGUID: string;
+    associatedID: string;
 
     get associatedMessagePart(): number | null {
-      const part = +associatedGUIDExtractor().exec(this.associatedGUID)![1]
+      const part = +associatedIDExtractor().exec(this.associatedID)![1]
       if (isNaN(part)) return null;
       return part;
     }
 
-    get associatedMessageGUID(): string {
+    get associatedMessageID(): string {
       try {
-        return associatedGUIDExtractor().exec(this.associatedGUID)![2];
+        return associatedIDExtractor().exec(this.associatedID)![2];
       } catch {
-        console.log(this.associatedGUID);
-        return this.associatedGUID;
+        console.log(this.associatedID);
+        return this.associatedID;
       }
     }
 
-    _patch({ associatedGUID, ...item }: AssociatedChatItemRepresentation) {
-        this.associatedGUID = associatedGUID;
+    _patch({ associatedID, ...item }: AssociatedChatItemRepresentation) {
+        this.associatedID = associatedID;
 
         return super._patch(item);
     }

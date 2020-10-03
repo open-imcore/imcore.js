@@ -1,23 +1,23 @@
-import { AttachmentChatItemRepresentation, AttachmentRepresentation } from "../types";
+import { AttachmentChatItemRepresentation, AttachmentRepresentation } from "imcore-ajax-core";
 import { AcknowledgableChatItem } from "./AcknowledgableChatItem";
 
 export class AttachmentChatItem extends AcknowledgableChatItem<AttachmentChatItemRepresentation> implements Omit<AttachmentChatItemRepresentation, "acknowledgments"> {
-    transferGUID: string;
+    transferID: string;
     metadata?: AttachmentRepresentation;
 
     toString() {
-        return `AttachmentChatItem[transferGUID: ${this.transferGUID}]`
+        return `AttachmentChatItem[transferID: ${this.transferID}]`
     }
 
     /**
      * The URL to download the attachment
      */
     get url() {
-        return this.rest.attachmentURL(this.transferGUID);
+        return this.rest.attachmentURL(this.transferID);
     }
 
-    _patch({ transferGUID, metadata, ...item }: AttachmentChatItemRepresentation) {
-        this.transferGUID = transferGUID;
+    _patch({ transferID, metadata, ...item }: AttachmentChatItemRepresentation) {
+        this.transferID = transferID;
         this.metadata = metadata;
 
         return super._patch(item);

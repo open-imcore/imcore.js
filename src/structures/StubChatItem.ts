@@ -1,5 +1,5 @@
+import { StubChatItemRepresentation } from "imcore-ajax-core";
 import { ChatItem } from "./ChatItem";
-import { StubChatItemRepresentation } from "../types";
 
 export class StubChatItem extends ChatItem<StubChatItemRepresentation> implements StubChatItemRepresentation {
     className: string;

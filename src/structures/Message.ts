@@ -1,4 +1,3 @@
-import { MessageRepresentation, AttachmentRepresentation } from "../types";
 import { Handle } from "./Handle";
 import { AnyChatItem, Util } from "../Util";
 import { Base } from "./Base";
@@ -9,6 +8,8 @@ import { TextChatItem } from "./TextChatItem";
 import { AcknowledgableChatItem } from "./AcknowledgableChatItem";
 import { StatusChatItem } from './StatusChatItem';
 import { AssociatedChatItem } from './AssociatedChatItem';
+import { IMService } from "../Constants";
+import { AttachmentRepresentation, MessageRepresentation } from "imcore-ajax-core";
 
 export class Message extends Base<MessageRepresentation> implements Omit<MessageRepresentation, "sender" | "subject" | "items"> {
 
@@ -26,15 +27,16 @@ export class Message extends Base<MessageRepresentation> implements Omit<Message
     isAudioMessage: boolean;
     description?: string;
     flags: number;
-    guid: string;
-    chatGroupID: string;
+    id: string;
+    chatID: string;
     fromMe: boolean;
     time: number;
     items: AnyChatItem[];
-    service: string;
+    service: IMService;
+    fileTransferIDs: string[];
 
     toString(): string {
-        return `Message[guid: ${this.guid}; time: ${this.time}; timeDelivered: ${this.timeDelivered}; timePlayed: ${this.timePlayed}; isTypingMessage: ${this.isTypingMessage}; isCancelTypingMessage: ${this.isCancelTypingMessage}; isDelivered: ${this.isDelivered}; isAudioMessage: ${this.isAudioMessage}; flags: ${this.flags}; fromMe: ${this.fromMe}; items: [${this.items.join(', ')}];]`
+        return `Message[id: ${this.id}; time: ${this.time}; timeDelivered: ${this.timeDelivered}; timePlayed: ${this.timePlayed}; isTypingMessage: ${this.isTypingMessage}; isCancelTypingMessage: ${this.isCancelTypingMessage}; isDelivered: ${this.isDelivered}; isAudioMessage: ${this.isAudioMessage}; flags: ${this.flags}; fromMe: ${this.fromMe}; items: [${this.items.join(', ')}];]`
     }
 
     public get isTranscriptLike(): boolean {
@@ -62,9 +64,9 @@ export class Message extends Base<MessageRepresentation> implements Omit<Message
     }
 
     get acknowledgedMessage(): Message | null {
-        const { acknowledgedMessageGUID } = this;
-        if (!acknowledgedMessageGUID) return null;
-        return this.client.messages.resolve(acknowledgedMessageGUID) || null;
+        const { acknowledgedMessageID } = this;
+        if (!acknowledgedMessageID) return null;
+        return this.client.messages.resolve(acknowledgedMessageID) || null;
     }
 
     get acknowledgedMessageItem(): AcknowledgableChatItem | null {
@@ -90,20 +92,24 @@ export class Message extends Base<MessageRepresentation> implements Omit<Message
         return part;
     }
 
-    get acknowledgedMessageGUID(): string | null {
-        return this.acknowledgmentItem?.associatedMessageGUID || null;
+    get acknowledgedMessageID(): string | null {
+        return this.acknowledgmentItem?.associatedMessageID || null;
     }
 
     get associatedItems(): AssociatedChatItem[] {
         return this.items.filter(item => item instanceof AssociatedChatItem) as AssociatedChatItem[];
     }
 
-    get associatedGUIDs(): string[] {
-        return this.associatedItems.map(item => item.associatedMessageGUID);
+    get associatedIDs(): string[] {
+        return this.associatedItems.map(item => item.associatedMessageID);
     }
 
     get isAcknowledgment() {
         return !!this.acknowledgmentItem;
+    }
+
+    get isAcknowledged() {
+        return this.items.some(item => item instanceof AcknowledgableChatItem && item.positiveAcknowledgments.length > 0);
     }
 
     get date() {
@@ -111,7 +117,13 @@ export class Message extends Base<MessageRepresentation> implements Omit<Message
     }
 
     get chat() {
-        return this.client.chats.resolve(this.chatGroupID);
+        if (!this.chatID) {
+            console.warn(`Message.ts:chat – chatID is empty or undefined! Message ID: ${this.id}`)
+            if (typeof window === "object") {
+                (window["chatGroupIDDebug"] || (window["chatGroupIDDebug"] = [])).push(this);
+            }
+        }
+        return this.client.chats.resolve(this.chatID);
     }
 
     get sender(): Handle | null {
@@ -127,7 +139,7 @@ export class Message extends Base<MessageRepresentation> implements Omit<Message
     }
 
     get delivered(): boolean {
-        return !!this.timeDelivered;
+        return !!this.timeDelivered || this.isDelivered;
     }
 
     _applyStatusItem({ flags, timeDelivered, timeRead, timePlayed }: StatusChatItem): this {
@@ -139,7 +151,7 @@ export class Message extends Base<MessageRepresentation> implements Omit<Message
       return this;
     }
 
-    _patch({ sender, subject, timeDelivered, timePlayed, timeRead, messageSubject, isSOS, isTypingMessage, isCancelTypingMessage, isDelivered, isAudioMessage, description, flags, items, guid, chatGroupID, fromMe, time, service }: MessageRepresentation): this {
+    _patch({ sender, subject, timeDelivered, timePlayed, timeRead, messageSubject, isSOS, isTypingMessage, isCancelTypingMessage, isDelivered, isAudioMessage, description, flags, items, id, chatID, fromMe, time, service, fileTransferIDs }: MessageRepresentation): this {
         this._sender = sender;
         this._subject = subject;
         this.items = (items?.map((item) => Util.resolveItem(item, this.client)).filter(item => item)) || []
@@ -154,11 +166,12 @@ export class Message extends Base<MessageRepresentation> implements Omit<Message
         this.isAudioMessage = isAudioMessage;
         this.description = description;
         this.flags = flags;
-        this.guid = guid;
-        this.chatGroupID = chatGroupID;
+        this.id = id;
+        this.chatID = chatID;
         this.fromMe = fromMe;
         this.time = time;
         this.service = service;
+        this.fileTransferIDs = fileTransferIDs;
 
         return this;
     }

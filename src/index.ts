@@ -20,4 +20,6 @@ export { StubChatItem } from "./structures/StubChatItem";
 export { TextChatItem } from "./structures/TextChatItem";
 export { AnyChatItem } from "./Util";
 export { StickerChatItem } from "./structures/StickerChatItem";
-export { AttachmentRepresentation as AttachmentMetadata, TextPart, TextPartType } from "./types";
+export { AttachmentRepresentation as AttachmentMetadata, TextPart, TextPartType } from "imcore-ajax-core";
+export { MessageOptions } from "imcore-ajax-core/dist/rest/chat-client";
+export * from "./Constants";

@@ -1,4 +1,4 @@
-import { AttachmentRepresentation, StickerChatItemRepresentation, StickerRepresentation } from '../types';
+import { AttachmentRepresentation, StickerChatItemRepresentation, StickerRepresentation } from "imcore-ajax-core";
 import { AssociatedChatItem } from './AssociatedChatItem';
 
 export class StickerChatItem extends AssociatedChatItem<StickerChatItemRepresentation> implements StickerChatItemRepresentation {

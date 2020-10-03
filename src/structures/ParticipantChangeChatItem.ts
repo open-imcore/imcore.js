@@ -1,5 +1,5 @@
+import { ParticipantChangeTranscriptChatItemRepresentation } from "imcore-ajax-core";
 import { ChatItem } from "./ChatItem";
-import { ParticipantChangeTranscriptChatItemRepresentation } from "../types";
 
 export enum ParticipantChangeType {
   addMember = 0,

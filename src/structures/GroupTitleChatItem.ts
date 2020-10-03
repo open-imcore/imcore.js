@@ -1,5 +1,5 @@
+import { GroupTitleChangeItemRepresentation } from "imcore-ajax-core";
 import { ChatItem } from "./ChatItem";
-import { GroupTitleChangeItemRepresentation } from "../types";
 
 export class GroupTitleChatItem extends ChatItem<GroupTitleChangeItemRepresentation> implements Omit<GroupTitleChangeItemRepresentation, "sender"> {
     title: string;

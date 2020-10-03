@@ -1,4 +1,4 @@
-import { TextChatItemRepresentation, TextPart } from '../types';
+import { TextChatItemRepresentation, TextPart } from "imcore-ajax-core";
 import { AcknowledgableChatItem } from "./AcknowledgableChatItem";
 
 export class TextChatItem extends AcknowledgableChatItem<TextChatItemRepresentation> implements Omit<TextChatItemRepresentation, "acknowledgments"> {

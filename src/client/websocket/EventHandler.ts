@@ -1,6 +1,4 @@
 import { Client } from '../client';
-import { WebSocketManager } from './manager';
-import { EventType } from './events';
 import {
   BlockListUpdated,
   ChatCreated,
@@ -17,11 +15,11 @@ import {
   MessageUpdated,
 } from '../client-events';
 import { ChatItemType } from '../../util/Constants';
-import { ChatItem } from '../../types';
 import { StatusChatItem } from '../..';
+import { ChatItem, EventType, IMWebSocketClient } from "imcore-ajax-core";
 
 export class EventHandler {
-    constructor(public client: Client, manager: WebSocketManager, onReady: () => void) {
+    constructor(public client: Client, manager: IMWebSocketClient, onReady: () => void) {
         manager.on(EventType.bootstrap, async ({ chats, contacts: { contacts, strangers }, messages }) => {
             contacts.forEach(contact => {
                 this.client.contacts.add(contact);
@@ -65,7 +63,7 @@ export class EventHandler {
         });
 
         manager.on(EventType.itemStatusChanged, status => {
-          const message = this.client.messages.resolve(status.itemGUID);
+          const message = this.client.messages.resolve(status.itemID);
           if (!message) return;
 
           const item = new StatusChatItem(this.client, status)
@@ -113,7 +111,7 @@ export class EventHandler {
         });
 
         manager.on(EventType.conversationPropertiesChanged, async properties => {
-            const chat = await this.client.chats.hardResolve(properties.groupID);
+            const chat = await this.client.chats.hardResolve(properties.id);
             if (!chat) return;
             chat._patch_configuration(properties);
         });
@@ -132,8 +130,8 @@ export class EventHandler {
             this.client.emit(BlockListUpdated, this.client.blockedHandleIDs.map(id => this.client.handles.resolve(id)));
         });
 
-        manager.on(EventType.participantsChanged, ({ chat: chatGUID, handles }) => {
-            const chat = this.client.chats.resolve(chatGUID);
+        manager.on(EventType.participantsChanged, ({ chat: chatID, handles }) => {
+            const chat = this.client.chats.resolve(chatID);
 
             chat.participants = handles.map(h => this.client.handles.resolve(h));
 

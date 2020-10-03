@@ -1,5 +1,5 @@
+import { GroupActionTranscriptChatItemRepresentation } from "imcore-ajax-core";
 import { ChatItem } from "./ChatItem";
-import { GroupActionTranscriptChatItemRepresentation } from "../types";
 
 export enum GroupActionType {
   left = 0

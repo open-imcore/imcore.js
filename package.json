@@ -1,6 +1,6 @@
 {
   "name": "@open-imcore/imcore.js",
-  "version": "0.0.1-alpha.2",
+  "version": "0.0.3.4",
   "description": "TypeScript SDK for interacting with the iMessage API",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -8,7 +8,7 @@
     "registry": "https://npm.pkg.github.com/"
   },
   "engines": {
-    "node": ">= 12.13 <13"
+    "node": ">= 12.13"
   },
   "devDependencies": {
     "@types/atob": "^2.1.2",
@@ -27,10 +27,10 @@
     "fs-extra": "^9.0.1",
     "inquirer": "^7.3.3",
     "jest": "~26.1.0",
+    "jimp": "^0.16.0",
     "prettier": "~2.0.5",
     "rimraf": "~3.0.2",
     "sharp": "^0.25.4",
-    "jimp": "^0.16.0",
     "ts-jest": "~26.1.3",
     "tsutils": "~3.17.0",
     "typescript": "~3.9.7",
@@ -50,9 +50,11 @@
     "@discordjs/collection": "^0.1.6",
     "atob": "^2.1.2",
     "axios": "^0.19.2",
+    "blob": "^0.1.0",
     "bplist-parser": "^0.2.0",
     "buffer": "^5.6.0",
     "file-type": "^14.7.1",
+    "imcore-ajax-core": "https://github.com/open-imcore/imcore-ajax-core.js",
     "pako": "^1.0.11",
     "tslib": "~2.0.0",
     "ws": "^7.3.1",

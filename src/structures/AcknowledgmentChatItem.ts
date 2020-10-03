@@ -1,19 +1,19 @@
+import { AcknowledgmentChatItemRepresentation } from "imcore-ajax-core";
 import { AssociatedChatItem } from "./AssociatedChatItem";
-import { AcknowledgmentChatItemRepresentation } from "../types";
 
-export class AcknowledgmentChatItem extends AssociatedChatItem<AcknowledgmentChatItemRepresentation> implements Omit<AcknowledgmentChatItemRepresentation, "sender" | "associatedGUID"> {
+export class AcknowledgmentChatItem extends AssociatedChatItem<AcknowledgmentChatItemRepresentation> implements Omit<AcknowledgmentChatItemRepresentation, "sender" | "associatedID"> {
     private _sender?: string;
     acknowledgmentType: number;
 
     get representation(): AcknowledgmentChatItemRepresentation {
       return {
-        chatGroupID: this.chatGroupID,
+        chatID: this.chatID,
         time: this.time,
-        guid: this.guid,
+        id: this.id,
         fromMe: this.fromMe,
         sender: this._sender,
         acknowledgmentType: this.acknowledgmentType,
-        associatedGUID: this.associatedGUID
+        associatedID: this.associatedID
       }
     }
 

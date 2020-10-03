@@ -5,15 +5,15 @@ import { ContactsManager } from "../managers/ContactsManager";
 import { HandleManager } from "../managers/HandleManager";
 import { MessageManager } from "../managers/MessageManager";
 import { Contact } from "../structures/Contact";
-import { SearchResult, AttachmentRepresentation } from "../types";
 import { DefaultOptions } from "../util/Constants";
 import { IMCoreEvent, IMCoreEventMap } from "./client-events";
 import { EventHandler } from "./websocket/EventHandler";
-import { WebSocketManager } from "./websocket/manager";
+import { AttachmentRepresentation, ContactSearchParameters, IMHTTPClient, IMWebSocketClient, MessageRepresentation, MessageSearchParameters } from "imcore-ajax-core";
 import { Message } from "../structures/Message";
-import { HTTPClient, MessageDeletionOptions, ChatCreationOptions } from "./rest/client";
 import { Handle } from "../structures/Handle";
 import { Chat } from "../structures/Chat";
+import { MessageDeletionOptions } from "imcore-ajax-core/dist/rest/message-client";
+import { ChatCreationOptions } from "imcore-ajax-core/dist/rest/chat-client";
 
 const { Axios } = require('axios');
 Axios.prototype.delete = function (url, data, config) {
@@ -31,6 +31,7 @@ export declare interface PatchedAxios extends AxiosInstance {
 export interface ClientOptions {
     apiHost: string;
     gateway: string;
+    token?: string;
     preloadChat?: string;
 }
 
@@ -46,30 +47,60 @@ export class Client extends EventEmitter {
     public chats: ChatManager = new ChatManager(this);
     public blockedHandleIDs: string[] = [];
     public readonly ready = false;
-    private socket = new WebSocketManager(this.options.gateway);
-    protected handler = new EventHandler(this, this.socket, () => this.emit("ready"));
-    public rest: HTTPClient;
+    public rest: IMHTTPClient;
+    public handler: EventHandler;
 
-    public constructor(public options: ClientOptions = DefaultOptions) {
+    #socket: IMWebSocketClient;
+
+    public constructor(private options: ClientOptions = DefaultOptions) {
         super();
 
-        this.rest = new HTTPClient(options);
+        this.rest = new IMHTTPClient({
+            baseURL: options.apiHost,
+            token: options.token
+        });
+
+        this.socket = new IMWebSocketClient(options.gateway, options.token);
 
         this.on("ready", () => {
             (this as any).ready = true;
         });
     }
+    
+    public get token(): string | undefined {
+        return this.options.token;
+    }
 
-    public async chat(groupID: string): Promise<Chat> {
-        return this.chats.resolve(groupID) || this.chats.add(await this.rest.getChat(groupID));
+    public set token(newValue) {
+        this.options.token = newValue;
+        if (this.socket) {
+            this.socket["token" as any] = newValue;
+        }
+    }
+
+    public get socket(): IMWebSocketClient {
+        return this.#socket;
+    }
+
+    public set socket(newValue) {
+        this.#socket = newValue;
+        this.handler = new EventHandler(this, this.socket, () => this.emit("ready"));
     }
 
     /**
-     * Load a message with the given GUID
-     * @param guid message to load
+     * Lazily resolve a chat
+     * @param chatID id of the chat to load
      */
-    public async message(guid: string): Promise<Message> {
-        const message = await this.rest.getMessage(guid);
+    public async chat(chatID: string): Promise<Chat> {
+        return this.chats.resolve(chatID) || this.chats.add(await this.rest.chats.fetchOne(chatID));
+    }
+
+    /**
+     * Load a message with the given ID
+     * @param id message ID to load
+     */
+    public async message(id: string): Promise<Message> {
+        const message = await this.rest.messages.fetchOne(id);
 
         return this.messages.add(message);
     }
@@ -79,7 +110,7 @@ export class Client extends EventEmitter {
      * @param options deletion parameters
      */
     public async deleteMessages(options: MessageDeletionOptions[]): Promise<void> {
-        await this.rest.deleteMessages(options);
+        await this.rest.messages.deleteMessage(options);
     }
 
     /**
@@ -87,8 +118,8 @@ export class Client extends EventEmitter {
      * @param query query string
      * @param limit maximum number of results
      */
-    public async searchMessages(query?: string, limit: number = 20): Promise<SearchResult[]> {
-        return this.rest.searchMessages({ query, limit });
+    public async searchMessages(parameters: MessageSearchParameters): Promise<Message[]> {
+        return this.rest.messages.search.single(parameters).then(messages => this.bulkIntakeMessages(messages));
     }
 
     /**
@@ -96,22 +127,18 @@ export class Client extends EventEmitter {
      * @param search query string
      * @param limit maximum number of results
      */
-    public async searchContacts(search?: string, limit?: number): Promise<Contact[]> {
-        const results = await this.rest.getContacts({
-            search,
-            limit
-        });
+    public async searchContacts(parameters: ContactSearchParameters): Promise<Contact[]> {
+        const results = await this.rest.contacts.search.single(parameters);
 
-        results.strangers.forEach(handle => this.handles.add(handle));
 
-        return Promise.all(results.contacts.map(contact => this.contacts.add(contact)));
+        return Promise.all(results.map(contact => this.contacts.add(contact)));
     }
 
     /**
      * Gets an array of blocked handles
      */
     public async blockedHandles(): Promise<Handle[]> {
-        const handleIDs = await this.rest.getBlocklist();
+        const handleIDs = await this.rest.handles.fetchBlocked();
 
         return handleIDs.map(handle => this.handles.resolve(handle)).filter(h => h);
     }
@@ -121,7 +148,7 @@ export class Client extends EventEmitter {
      * @param limit maximum number of results
      */
     public async getChats(limit?: number): Promise<Chat[]> {
-        const chats = await this.rest.getChats(limit);
+        const chats = await this.rest.chats.fetchAll(limit);
 
         return Promise.all(chats.map(c => this.chats.add(c)));
     }
@@ -131,15 +158,15 @@ export class Client extends EventEmitter {
      * @param options options to use when creating the chat
      */
     public async createChat(options: ChatCreationOptions): Promise<Chat> {
-        return this.chats.add(await this.rest.createChat(options));
+        return this.chats.add(await this.rest.chats.create(options));
     }
 
     /**
      * Uploads a file to the server and returns its new record
      * @param attachment attachment to upload
      */
-    public async upload(attachment: Parameters<this["rest"]["upload"]>[0]): Promise<AttachmentRepresentation> {
-        return this.rest.upload(attachment);
+    public async upload(attachment: Parameters<this["rest"]["attachments"]["create"]>[0], mime: Parameters<this["rest"]["attachments"]["create"]>[1]): Promise<AttachmentRepresentation> {
+        return this.rest.attachments.create(attachment, mime);
     }
 
     /**
@@ -155,5 +182,15 @@ export class Client extends EventEmitter {
      */
     public contactForHandleID(handleID: string): Contact | null {
         return this.contacts.contactWithHandle(handleID);
+    }
+
+    /**
+     * Takes an array of message representations and batch processes them
+     * @param messages message representations
+     */
+    private async bulkIntakeMessages(messages: MessageRepresentation[]): Promise<Message[]> {
+        const batch = await Promise.all(messages.map(message => this.messages.batchAdd(message)));
+
+        return this.messages.resolveBatchResults(batch);
     }
 }

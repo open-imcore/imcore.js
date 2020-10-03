@@ -1,16 +1,25 @@
 import { BaseManager } from "./BaseManager";
 import { Message } from "../structures/Message";
 import { Client } from "../client/client";
-import { MessageRepresentation } from "../types";
+import { Chat } from "../structures/Chat";
+import { MessageRepresentation } from "imcore-ajax-core";
 
 export interface MessageBatchingResult {
     message: Message;
-    associatedGUIDs?: string[];
+    associatedIDs?: string[];
 }
 
 export class MessageManager extends BaseManager<Message, MessageRepresentation> {
     constructor(client: Client) {
-        super(client, Message, "guid");
+        super(client, Message, "id");
+    }
+
+    getAllForChatID(chatID: string) {
+        return this.cache.filter(m => m.chatID === chatID);
+    }
+
+    getAllForChat(chat: Chat) {
+        return this.getAllForChatID(chat.id);
     }
 
     /**
@@ -22,7 +31,7 @@ export class MessageManager extends BaseManager<Message, MessageRepresentation> 
 
         return {
             message,
-            associatedGUIDs: message.associatedGUIDs
+            associatedIDs: message.associatedIDs
         };
     }
 
@@ -31,9 +40,9 @@ export class MessageManager extends BaseManager<Message, MessageRepresentation> 
      * @param results results to load
      */
     async resolveBatchResults(results: MessageBatchingResult[]): Promise<Message[]> {
-        const guids = results.reduce((acc, { associatedGUIDs }) => acc.concat(associatedGUIDs), [] as string[]);
+        const messageIDs = results.reduce((acc, { associatedIDs }) => acc.concat(associatedIDs), [] as string[]);
 
-        const representations = await this.client.rest.bulkGetMessages(guids)
+        const representations = await this.client.rest.messages.fetchMany(messageIDs)
 
         return Promise.all(representations.map(rep => this.add(rep)));
     }
@@ -47,7 +56,7 @@ export class MessageManager extends BaseManager<Message, MessageRepresentation> 
         
         const { message } = result;
         if (!message.chat) {
-            await this.client.chat(message.chatGroupID)
+            await this.client.chat(message.chatID)
         }
 
         return result.message;

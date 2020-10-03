@@ -92,7 +92,7 @@ client.on(MessageReceived, async message => {
     const acknowledgment = message.items.find(item => item instanceof AcknowledgmentChatItem) as AcknowledgmentChatItem | undefined;
 
     if (acknowledgment && acknowledgment.acknowledgmentType === TapbackStyle.question) {
-        const associated = await client.message(acknowledgment.associatedMessageGUID);
+        const associated = await client.message(acknowledgment.associatedMessageID);
 
         distort(associated);
     }

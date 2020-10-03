@@ -1,9 +1,9 @@
+import { ContactRepresentation, HandleRepresentation } from "imcore-ajax-core";
 import { Base } from "./Base";
-import { ContactRepresentation } from "../types";
 import { Handle } from "./Handle";
 
 export class Contact extends Base<ContactRepresentation> implements Omit<ContactRepresentation, "handles"> {
-    private _handles: import("../types").HandleRepresentation[];
+    private _handles: HandleRepresentation[];
 
     id: string;
     firstName?: string;
@@ -35,7 +35,7 @@ export class Contact extends Base<ContactRepresentation> implements Omit<Contact
     }
 
     async refresh(): Promise<this> {
-        return this._patch(await this.rest.getContact(this.id));
+        return this._patch(await this.rest.contacts.fetchOne(this.id));
     }
 
     _patch({ id, firstName, middleName, lastName, fullName, nickname, countryCode, hasPicture, handles }: ContactRepresentation) {

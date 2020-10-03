@@ -1,5 +1,5 @@
+import { TypingChatItemRepresentation } from "imcore-ajax-core";
 import { ChatItem } from './ChatItem';
-import { TypingChatItemRepresentation } from '../types';
 import { Handle } from "./Handle";
 
 export class TypingChatItem extends ChatItem<TypingChatItemRepresentation> implements Omit<TypingChatItemRepresentation, "sender"> {

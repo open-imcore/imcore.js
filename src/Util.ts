@@ -13,12 +13,13 @@ import { AssociatedChatItem } from "./structures/AssociatedChatItem";
 import { StubChatItem } from "./structures/StubChatItem";
 import { GroupTitleChatItem } from "./structures/GroupTitleChatItem";
 import { Message } from "./structures/Message";
-import { AnyChatItemModel, FuzzyHandle } from "./types";
+import { FuzzyHandle } from "./types";
 import { Client } from "./client/client";
 import { Handle } from "./structures/Handle";
 import { Contact } from "./structures/Contact";
 import { TypingChatItem } from "./structures/TypingChatItem";
 import { StickerChatItem } from './structures/StickerChatItem';
+import { AnyChatItemModel } from "imcore-ajax-core";
 
 export type AnyChatItem = TextChatItem | DateChatItem | SenderChatItem | ParticipantChangeChatItem | AttachmentChatItem | StatusChatItem | GroupActionChatItem | PluginChatItem | AcknowledgmentChatItem | StubChatItem | GroupTitleChatItem | Message;
 
